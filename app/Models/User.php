@@ -48,4 +48,12 @@ class User extends Authenticatable
             'role' => Role::class,
         ];
     }
+
+    public function jsonSerialize(): array
+    {
+        $model = $this->toArray();
+        $model['role_name'] = $this->role->name();
+
+        return $model;
+    }
 }

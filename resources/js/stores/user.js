@@ -16,11 +16,15 @@ export const useUserStore = defineStore("user", () => {
             });
     }
 
+	function setUser(newUser) {
+        user.value = newUser;
+    }
+
     function logout() {
         user.value = null;
 
         axios.post("logout");
     }
 
-    return { user, getUser, logout };
+    return { user, getUser, logout, setUser };
 });

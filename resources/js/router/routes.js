@@ -9,6 +9,12 @@ export default [
         name: "home",
         meta: { auth: true },
     },
+    {
+        path: "/profile",
+        component: () => import("@/pages/Profile.vue"),
+        name: "profile",
+        meta: { auth: true },
+    },
     { path: "/login", component: Login, name: "login" },
     {
         path: "/forgot-password",

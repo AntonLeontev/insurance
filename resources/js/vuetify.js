@@ -9,11 +9,11 @@ const vuetify = createVuetify({
     theme: {
         defaultTheme: "light",
         themes: {
-            dark: {
-                dark: true,
+            light: {
+                dark: false,
                 colors: {
-                    primary: colors.teal.darken4,
-                    danger: colors.red.base,
+                    primary: colors.green.darken2,
+                    danger: colors.red.darken4,
                 },
             },
         },

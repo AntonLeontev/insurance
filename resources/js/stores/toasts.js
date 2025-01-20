@@ -3,26 +3,32 @@ import { ref, reactive } from "vue";
 
 export const useToastsStore = defineStore("toasts", () => {
     const toasts = reactive([]);
-    const index = ref(1);
+    let index = 1;
 
-    function addToast(text, type) {
+    function addToast(text, type, delay = 0) {
         toasts.push({
             id: index,
             text,
             type,
         });
 
-        index.value++;
+        index++;
+
+        if (delay > 0) {
+            setTimeout(() => {
+                remove(index - 1);
+            }, delay);
+        }
     }
 
-    function addInfo(text) {
-        addToast(text, "info");
+    function addInfo(text, delay = 0) {
+        addToast(text, "info", delay);
     }
-    function addError(text) {
-        addToast(text, "error");
+    function addError(text, delay = 0) {
+        addToast(text, "error", delay);
     }
-    function addSuccess(text) {
-        addToast(text, "success");
+    function addSuccess(text, delay = 0) {
+        addToast(text, "success", delay);
     }
 
     function remove(id) {
@@ -32,5 +38,23 @@ export const useToastsStore = defineStore("toasts", () => {
         }
     }
 
-    return { toasts, addToast, addInfo, addError, addSuccess, remove };
+	function handleResponseError(error) {
+        if (error.response?.status === 422) {
+            return;
+        }
+
+        addError(
+            error.response?.data?.message ?? error.message ?? "Произошла ошибка"
+        );
+    }
+
+    return {
+        toasts,
+        addToast,
+        addInfo,
+        addError,
+        addSuccess,
+        remove,
+        handleResponseError,
+    };
 });
