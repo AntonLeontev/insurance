@@ -1,12 +1,8 @@
 <?php
 
 return [
-    'wamm' => [
-        'token' => env('WAMM_TOKEN'),
-    ],
-
-    'openai' => [
-        'token' => env('OPENAI_TOKEN'),
+    'atol' => [
+        'base_url' => env('ATOL_BASE_URL'),
     ],
 
     'telegram_logger' => [

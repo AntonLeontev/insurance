@@ -3,10 +3,13 @@
 use App\Http\Controllers\AgencyController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Services\Atol\AtolService;
 use Illuminate\Support\Facades\Route;
 
 if (config('app.url') === 'http://127.0.0.1:8000') {
-    Route::get('test', function () {});
+    Route::get('test', function (AtolService $service) {
+        dd($service->getToken());
+    });
 }
 
 Route::post('login', [AuthController::class, 'login'])->name('login');

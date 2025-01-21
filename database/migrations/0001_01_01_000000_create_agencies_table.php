@@ -23,6 +23,8 @@ return new class extends Migration
             $table->string('ffd')->nullable();
             $table->string('atol_login')->nullable();
             $table->string('atol_password')->nullable();
+            $table->string('atol_token')->nullable();
+            $table->timestamp('atol_token_expires')->nullable();
             $table->timestamps();
         });
     }
