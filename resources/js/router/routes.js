@@ -1,5 +1,3 @@
-import ForgotPassword from "@/pages/auth/ForgotPassword.vue";
-import ResetPassword from "@/pages/auth/ResetPassword.vue";
 import Login from "@/pages/auth/Login.vue";
 
 export default [
@@ -15,15 +13,45 @@ export default [
         name: "profile",
         meta: { auth: true },
     },
+    {
+        path: "/users",
+        component: () => import("@/pages/Users.vue"),
+        name: "users",
+        meta: { auth: true },
+    },
+    {
+        path: "/agency-settings",
+        component: () => import("@/pages/AgencySettings.vue"),
+        name: "agency-settings",
+        meta: { auth: true },
+    },
+    {
+        path: "/atol-settings",
+        component: () => import("@/pages/AtolSettings.vue"),
+        name: "atol-settings",
+        meta: { auth: true },
+    },
+    {
+        path: "/products",
+        component: () => import("@/pages/Products.vue"),
+        name: "products",
+        meta: { auth: true },
+    },
+    {
+        path: "/checks",
+        component: () => import("@/pages/Checks.vue"),
+        name: "checks",
+        meta: { auth: true },
+    },
     { path: "/login", component: Login, name: "login" },
     {
         path: "/forgot-password",
-        component: ForgotPassword,
+        component: () => import("@/pages/auth/ForgotPassword.vue"),
         name: "forgot-password",
     },
     {
         path: "/reset-password",
-        component: ResetPassword,
+        component: () => import("@/pages/auth/ResetPassword.vue"),
         name: "reset-password",
     },
 ];

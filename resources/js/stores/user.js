@@ -20,11 +20,15 @@ export const useUserStore = defineStore("user", () => {
         user.value = newUser;
     }
 
+	function setAgency(agency) {
+        user.value.agency = agency;
+    }
+
     function logout() {
         user.value = null;
 
         axios.post("logout");
     }
 
-    return { user, getUser, logout, setUser };
+    return { user, getUser, logout, setUser, setAgency };
 });

@@ -14,7 +14,7 @@ class UserController extends Controller
             abort(Response::HTTP_UNAUTHORIZED);
         }
 
-        return response()->json(auth()->user());
+        return response()->json(auth()->user()->load('agency'));
     }
 
     public function updateProfile(ProfileUpdateRequest $request)

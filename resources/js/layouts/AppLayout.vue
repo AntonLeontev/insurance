@@ -14,9 +14,39 @@ import Profile from '@/components/Profile.vue';
         <v-navigation-drawer>
             <v-list>
                 <v-list-item>
-                    <RouterLink :to="{ name: 'home' }" class="d-flex ga-1" :class="$route.name === 'home' ? 'text-info' : ''">
+                    <RouterLink :to="{ name: 'home' }" class="d-flex ga-1" :class="$route.name === 'home' ? 'text-primary' : ''">
 						<v-icon icon="mdi-file-send-outline"></v-icon>
-						Загрузка файлов
+						Главная
+					</RouterLink>
+                </v-list-item>
+                <v-list-item>
+                    <RouterLink :to="{ name: 'users' }" class="d-flex ga-1" :class="$route.name === 'users' ? 'text-primary' : ''">
+						<v-icon icon="mdi-file-send-outline"></v-icon>
+						Пользователи
+					</RouterLink>
+                </v-list-item>
+                <v-list-item>
+                    <RouterLink :to="{ name: 'agency-settings' }" class="d-flex ga-1" :class="$route.name === 'agency-settings' ? 'text-primary' : ''">
+						<v-icon icon="mdi-file-send-outline"></v-icon>
+						Настройки агенства
+					</RouterLink>
+                </v-list-item>
+                <v-list-item>
+                    <RouterLink :to="{ name: 'atol-settings' }" class="d-flex ga-1" :class="$route.name === 'atol-settings' ? 'text-primary' : ''">
+						<v-icon icon="mdi-file-send-outline"></v-icon>
+						Настройки АТОЛ
+					</RouterLink>
+                </v-list-item>
+                <v-list-item>
+                    <RouterLink :to="{ name: 'products' }" class="d-flex ga-1" :class="$route.name === 'products' ? 'text-primary' : ''">
+						<v-icon icon="mdi-file-send-outline"></v-icon>
+						Продукты
+					</RouterLink>
+                </v-list-item>
+                <v-list-item>
+                    <RouterLink :to="{ name: 'checks' }" class="d-flex ga-1" :class="$route.name === 'checks' ? 'text-primary' : ''">
+						<v-icon icon="mdi-file-send-outline"></v-icon>
+						Чеки
 					</RouterLink>
                 </v-list-item>
             </v-list>
