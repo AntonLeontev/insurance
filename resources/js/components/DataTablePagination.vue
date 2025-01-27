@@ -3,8 +3,8 @@
 
 
 	const props = defineProps({
-		totalItems: { type: Number, required: true, default: 0 },
-		itemsPerPage: { type: Number, required: true, default: 10 },
+		totalItems: { required: true, default: 0 },
+		itemsPerPage: { required: true, default: 10 },
 		page: { type: Number, required: true, default: 1 },
 	})
 

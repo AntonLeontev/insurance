@@ -24,6 +24,10 @@ Route::controller(AgencyController::class)->group(function () {
     Route::get('agencies/{agency}/users', 'users')->name('agencies.users')->can('viewUsers', 'agency');
     Route::delete('agencies/{agency}/users/{id}', 'deleteUser')->name('agencies.users.destroy')->can('deleteUsers', 'agency');
     Route::post('agencies/{agency}/users/', 'createUser')->name('agencies.users.create')->can('createUsers', 'agency');
+    Route::post('agencies/{agency}/users/{user}/invite', 'sendInvite')
+        ->middleware(['throttle:3,1'])
+        ->name('agencies.users.invite')
+        ->can('createUsers', 'agency');
 });
 
 Route::view('reset-password', 'app')->name('password.reset');

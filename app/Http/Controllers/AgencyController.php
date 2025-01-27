@@ -11,6 +11,7 @@ use App\Notifications\UserInvited;
 use App\Services\Atol\AtolService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class AgencyController extends Controller
 {
@@ -53,8 +54,10 @@ class AgencyController extends Controller
                 $query->orderBy('id', 'desc');
             })
             ->when($request->has('search'), function ($query) use ($request) {
-                $query->where('name', 'like', '%'.$request->get('search').'%')
-                    ->orWhere('email', 'like', '%'.$request->get('search').'%');
+                $query->where(function ($q) use ($request) {
+                    $q->where('name', 'like', '%'.$request->get('search').'%')
+                        ->orWhere('email', 'like', '%'.$request->get('search').'%');
+                });
             })
             ->paginate($paginationSize);
 
@@ -65,6 +68,7 @@ class AgencyController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role->name(),
+                'email_verified' => $user->email_verified_at !== null,
             ];
         });
 
@@ -87,5 +91,21 @@ class AgencyController extends Controller
         ]);
 
         $user->notify(new UserInvited($password));
+    }
+
+    public function sendInvite(Agency $agency, User $user)
+    {
+        if ($user->email_verified_at !== null) {
+            abort(Response::HTTP_BAD_REQUEST, 'Пользователь уже принял приглашение');
+        }
+        if ($user->agency_id !== $agency->id) {
+            abort(Response::HTTP_BAD_REQUEST, 'Нельзя пригласить пользователя другого агенства');
+        }
+
+        $token = str()->random(16);
+        $user->password = $token;
+        $user->save();
+
+        $user->notify(new UserInvited($token));
     }
 }

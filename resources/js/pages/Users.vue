@@ -26,16 +26,20 @@
 	const totalItems = ref(0);
 	const page = ref(1);
 	const sortBy = ref(null);
+	const search = ref(null);
 
 	watch(itemsPerPage, () => {
 		localStorage.setItem('users:itemsPerPage', itemsPerPage.value);
-		loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value });
+		loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value, search: search.value });
 	});
 	watch(page, () => {
-		loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value });
+		loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value, search: search.value });
+	});
+	watch(search, () => {
+		loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value, search: search.value });
 	});
 
-	function loadItems({ page, itemsPerPage, sortBy }) {
+	function loadItems({ page, itemsPerPage, sortBy, search }) {
 		loading.value = true;
 
 		axios.get(
@@ -44,6 +48,7 @@
 				page, 
 				items_per_page: itemsPerPage, 
 				sort: sortBy,
+				search: search,
 			} }
 		)
 			.then(response => {
@@ -81,7 +86,7 @@
 			id: deletingItem.value.id
 		}))
 			.then(response => {
-				loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value })
+				loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value, search: search.value })
 			})
 			.finally(() => {
 				deleting.value = false
@@ -102,13 +107,23 @@
 
 	const submitCreateForm = () => createForm.submit()
 		.then(response => {
-			loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value })
+			loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value, search: search.value })
 			closeCreateForm();
 		})
 		.catch(error => {
 			toastsStore.handleResponseError(error);
 		});
 
+
+	function sendInvite(user) {
+		axios.post(route('agencies.users.invite', [userStore.user.agency_id, user.id]))
+			.then(response => {
+				toastsStore.addSuccess('Приглашение отправлено', 2500)
+			})
+			.catch(error => {
+				toastsStore.handleResponseError(error);
+			})
+	}
 </script>
 
 <template>
@@ -117,7 +132,17 @@
 			<template v-slot:header>
 				<div class="justify-between d-flex">
 					<H1>Пользователи</H1>
-					<v-btn prepend-icon="mdi-plus" @click="openCreateModal" color="primary">Пригласить пользователя</v-btn>
+
+					<div class="d-flex ga-2">
+						<v-btn prepend-icon="mdi-account-plus" @click="openCreateModal" color="primary">Пригласить пользователя</v-btn>
+					</div>
+				</div>
+
+				<div class="justify-start mt-3 d-flex">
+					<v-text-field v-model="search" density="compact" placeholder="Поиск" variant="outlined" hide-details max-width="300px" 
+						append-inner-icon="mdi-magnify"
+						clearable
+					/>
 				</div>
 			</template>
 			<template v-slot:content>
@@ -133,14 +158,30 @@
 					@update:options="loadItems"
 					density="comfortable"
 				>
+					<template v-slot:item.name="{ item }">
+						{{ item.name }} - ({{ item.agency_id }})
+
+						<v-icon
+							color="danger"
+							class="ms-2"
+							size="small" 
+							icon="mdi-email-alert-outline"
+							v-if="!item.email_verified"
+							v-tooltip="'Пользователь еще не активирован'"
+						/>
+					</template>
+
 					<template v-slot:item.actions="{ item }">
-						<!-- <v-icon
+						<v-icon
 							class="me-2"
 							size="small"
-							@click="editItem(item)"
+							@click="sendInvite(item)"
+							v-if="!item.email_verified"
+							color="primary"
+							title="Отправить еще одно приглашение"
 						>
-							mdi-pencil
-						</v-icon> -->
+							mdi-email-arrow-right-outline
+						</v-icon>
 						<v-btn
 							icon="mdi-trash-can-outline"
 							variant="plain"
@@ -180,7 +221,7 @@
 				<v-dialog
 					v-model="creating"
 					width="auto"
-					max-width="400"
+					max-width="450"
 				>
 					<v-card
 						prepend-icon="mdi-plus"
@@ -193,6 +234,10 @@
 						</template>
 						
 						<template v-slot:text>
+							<p class="mb-6 text-center text-body-1">
+								Пользователю будет отправлено приглашение на почту
+							</p>
+
 							<form class="flex-col d-flex ga-3">
 								<v-text-field
 									label="Email"
