@@ -50,6 +50,11 @@ export default [
         name: "forgot-password",
     },
     {
+        path: "/create-password/:email/:token",
+        component: () => import("@/pages/auth/CreatePassword.vue"),
+        name: "create-password",
+    },
+    {
         path: "/reset-password",
         component: () => import("@/pages/auth/ResetPassword.vue"),
         name: "reset-password",
