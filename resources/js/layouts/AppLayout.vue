@@ -1,6 +1,9 @@
 <script setup>
 import Toasts from '@/components/Toasts.vue';
 import Profile from '@/components/Profile.vue';
+import { useUserStore } from '@/stores/user';
+
+const user = useUserStore().user;
 </script>
 
 <template>
@@ -19,28 +22,28 @@ import Profile from '@/components/Profile.vue';
 						Главная
 					</RouterLink>
                 </v-list-item>
-                <v-list-item>
+                <v-list-item v-if="user.role === 'admin'">
                     <RouterLink :to="{ name: 'users' }" class="d-flex ga-1" :class="$route.name === 'users' ? 'text-primary' : ''">
 						<v-icon icon="mdi-file-send-outline"></v-icon>
 						Пользователи
 					</RouterLink>
                 </v-list-item>
-                <v-list-item>
+                <v-list-item v-if="user.role === 'admin'">
                     <RouterLink :to="{ name: 'agency-settings' }" class="d-flex ga-1" :class="$route.name === 'agency-settings' ? 'text-primary' : ''">
 						<v-icon icon="mdi-file-send-outline"></v-icon>
 						Настройки агенства
 					</RouterLink>
                 </v-list-item>
-                <v-list-item>
+                <v-list-item v-if="user.role === 'admin'">
                     <RouterLink :to="{ name: 'atol-settings' }" class="d-flex ga-1" :class="$route.name === 'atol-settings' ? 'text-primary' : ''">
 						<v-icon icon="mdi-file-send-outline"></v-icon>
 						Настройки АТОЛ
 					</RouterLink>
                 </v-list-item>
-                <v-list-item>
+                <v-list-item v-if="user.role === 'admin'">
                     <RouterLink :to="{ name: 'products' }" class="d-flex ga-1" :class="$route.name === 'products' ? 'text-primary' : ''">
 						<v-icon icon="mdi-file-send-outline"></v-icon>
-						Продукты
+						Страховые продукты
 					</RouterLink>
                 </v-list-item>
                 <v-list-item>
