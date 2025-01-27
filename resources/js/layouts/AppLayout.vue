@@ -42,7 +42,7 @@ const user = useUserStore().user;
                 </v-list-item>
                 <v-list-item v-if="user.role === 'admin'">
                     <RouterLink :to="{ name: 'products' }" class="d-flex ga-1" :class="$route.name === 'products' ? 'text-primary' : ''">
-						<v-icon icon="mdi-file-send-outline"></v-icon>
+						<v-icon icon="mdi-umbrella-outline"></v-icon>
 						Страховые продукты
 					</RouterLink>
                 </v-list-item>

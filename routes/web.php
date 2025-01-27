@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AgencyController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\InsurerController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -28,6 +29,18 @@ Route::controller(AgencyController::class)->group(function () {
         ->middleware(['throttle:3,1'])
         ->name('agencies.users.invite')
         ->can('createUsers', 'agency');
+});
+
+Route::controller(InsurerController::class)->group(function () {
+    Route::get('insurers', 'index')->name('insurers.index');
+    Route::post('insurers', 'store')
+        ->middleware(['precognitive'])
+        ->name('insurers.store');
+    Route::post('insurers/update', 'update')
+        ->middleware(['precognitive'])
+        ->name('insurers.update');
+    Route::delete('insurers/{insurer}', 'destroy')
+        ->name('insurers.destroy');
 });
 
 Route::view('reset-password', 'app')->name('password.reset');
