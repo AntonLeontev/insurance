@@ -28,6 +28,7 @@
 				variant="outlined"
 				density="compact"
 				@update:modelValue="$emit('update:itemsPerPage', $event)"
+				hide-details
 			>
 			</v-select>
 
@@ -44,11 +45,3 @@
 		</div>
 	</div>
 </template>
-
-<style>
-.per-page-select {
-	.v-input__details {
-		display: none !important;
-	}
-}
-</style>
