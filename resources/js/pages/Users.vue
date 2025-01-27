@@ -159,7 +159,7 @@
 					density="comfortable"
 				>
 					<template v-slot:item.name="{ item }">
-						{{ item.name }} - ({{ item.agency_id }})
+						{{ item.name }}
 
 						<v-icon
 							color="danger"
