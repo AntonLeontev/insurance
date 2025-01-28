@@ -14,6 +14,7 @@ class InsurerController extends Controller
     public function index(Request $request): JsonResponse
     {
         $insurers = Insurer::where('agency_id', $request->get('agency_id'))
+            ->with(['contracts' => fn ($q) => $q->select(['id', 'name', 'insurer_id'])])
             ->get(['id', 'name', 'inn']);
 
         return response()->json($insurers);
