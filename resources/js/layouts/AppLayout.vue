@@ -47,9 +47,21 @@ const user = useUserStore().user;
 					</RouterLink>
                 </v-list-item>
                 <v-list-item>
-                    <RouterLink :to="{ name: 'checks' }" class="d-flex ga-1" :class="$route.name === 'checks' ? 'text-primary' : ''">
+                    <RouterLink :to="{ name: 'receipts.drafts' }" class="d-flex ga-1" :class="$route.name === 'receipts.drafts' ? 'text-primary' : ''">
 						<v-icon icon="mdi-file-send-outline"></v-icon>
-						Чеки
+						Черновики чеков
+					</RouterLink>
+                </v-list-item>
+                <v-list-item>
+                    <RouterLink :to="{ name: 'receipts.sent' }" class="d-flex ga-1" :class="$route.name === 'receipts.sent' ? 'text-primary' : ''">
+						<v-icon icon="mdi-file-send-outline"></v-icon>
+						Оформленные чеки
+					</RouterLink>
+                </v-list-item>
+                <v-list-item>
+                    <RouterLink :to="{ name: 'receipts.create' }" class="d-flex ga-1" :class="$route.name === 'receipts.create' ? 'text-primary' : ''">
+						<v-icon icon="mdi-plus"></v-icon>
+						Новый чек
 					</RouterLink>
                 </v-list-item>
             </v-list>

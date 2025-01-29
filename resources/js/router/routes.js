@@ -38,9 +38,21 @@ export default [
         meta: { auth: true },
     },
     {
-        path: "/checks",
-        component: () => import("@/pages/Checks.vue"),
-        name: "checks",
+        path: "/receipts/drafts",
+        component: () => import("@/pages/receipts/ReceiptsDrafts.vue"),
+        name: "receipts.drafts",
+        meta: { auth: true },
+    },
+    {
+        path: "/receipts/sent",
+        component: () => import("@/pages/receipts/ReceiptsSent.vue"),
+        name: "receipts.sent",
+        meta: { auth: true },
+    },
+    {
+        path: "/receipts/create",
+        component: () => import("@/pages/receipts/ReceiptsCreate.vue"),
+        name: "receipts.create",
         meta: { auth: true },
     },
     { path: "/login", component: Login, name: "login" },
@@ -58,5 +70,10 @@ export default [
         path: "/reset-password",
         component: () => import("@/pages/auth/ResetPassword.vue"),
         name: "reset-password",
+    },
+    {
+        path: "/:pathMatch(.*)*",
+        name: "404",
+        component: () => import("@/pages/404.vue"),
     },
 ];

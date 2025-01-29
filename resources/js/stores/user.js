@@ -7,7 +7,7 @@ export const useUserStore = defineStore("user", () => {
 
     async function getUser() {
         await axios
-            .get("user")
+            .get("/user")
             .then((response) => {
                 user.value = response.data;
             })

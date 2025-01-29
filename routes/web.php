@@ -4,6 +4,7 @@ use App\Http\Controllers\AgencyController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\InsurerController;
+use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -53,6 +54,12 @@ Route::controller(ContractController::class)->group(function () {
     // 	->name('contracts.update');
     Route::delete('contracts/{contract}', 'destroy')
         ->name('contracts.destroy');
+});
+
+Route::controller(ReceiptController::class)->group(function () {
+    Route::post('receipts', 'store')
+        ->middleware(['precognitive'])
+        ->name('receipts.store');
 });
 
 Route::view('reset-password', 'app')->name('password.reset');
