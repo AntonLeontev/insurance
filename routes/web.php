@@ -57,9 +57,18 @@ Route::controller(ContractController::class)->group(function () {
 });
 
 Route::controller(ReceiptController::class)->group(function () {
+    Route::get('receipts', 'index')
+        ->name('receipts.index');
+    Route::get('receipts/{receipt}', 'show')
+        ->whereNumber('receipt')
+        ->name('receipts.show');
     Route::post('receipts', 'store')
         ->middleware(['precognitive'])
         ->name('receipts.store');
+    Route::put('receipts/{receipt}', 'update')
+        ->name('receipts.update');
+    Route::delete('receipts/{receipt}', 'destroy')
+        ->name('receipts.destroy');
 });
 
 Route::view('reset-password', 'app')->name('password.reset');

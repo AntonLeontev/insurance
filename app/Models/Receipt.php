@@ -4,7 +4,10 @@ namespace App\Models;
 
 use App\Casts\AmountCast;
 use App\Enums\PaymentType;
+use App\Enums\Role;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class Receipt extends Model
 {
@@ -40,4 +43,13 @@ class Receipt extends Model
         'payment_type' => PaymentType::class,
         'amount' => AmountCast::class,
     ];
+
+    public function scopeAvaliableForUser(Builder $query)
+    {
+        if (Auth::user()->role === Role::CASHIER) {
+            $query->where('user_id', Auth::id());
+        } else {
+            $query->where('agency_id', Auth::user()->agency_id);
+        }
+    }
 }

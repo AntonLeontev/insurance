@@ -14,9 +14,7 @@
 </script>
 
 <template>
-	<div class="justify-between d-flex align-center">
-		<div class=""></div>
-		
+	<div class="justify-end d-flex align-center" v-if="props.totalItems > 0">
 		<div class="d-flex align-center ga-4">
 			<span>Показывать по</span>
 
