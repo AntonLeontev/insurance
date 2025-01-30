@@ -52,4 +52,38 @@ class Receipt extends Model
             $query->where('agency_id', Auth::user()->agency_id);
         }
     }
+
+    public function scopeSort(Builder $query)
+    {
+        $query->when(request()->has('sort'), function ($query) {
+            foreach (request()->get('sort') as $sort) {
+                $query->orderBy($sort['key'], $sort['order']);
+            }
+        })
+            ->when(! request()->has('sort'), function ($query) {
+                $query->orderBy('id', 'desc');
+            });
+    }
+
+    public function scopeSearch(Builder $query)
+    {
+        $query->when(request()->has('search'), function ($query) {
+            $query->where(function ($q) {
+                $q->where('name', 'like', '%'.request()->get('search').'%')
+                    ->orWhere('surname', 'like', '%'.request()->get('search').'%')
+                    ->orWhere('patronymic', 'like', '%'.request()->get('search').'%')
+                    ->orWhere('contract_number', 'like', '%'.request()->get('search').'%')
+                    ->orWhere('contract_series', 'like', '%'.request()->get('search').'%');
+            });
+        });
+    }
+
+    public function scopeFilters(Builder $query)
+    {
+        $query->when(request()->has('filters'), function ($query) {
+            foreach (request()->get('filters') as $filter) {
+                $query->where($filter['column'], $filter['value']);
+            }
+        });
+    }
 }

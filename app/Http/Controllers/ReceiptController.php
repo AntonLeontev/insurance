@@ -29,28 +29,9 @@ class ReceiptController extends Controller
     {
         $receipts = Receipt::query()
             ->avaliableForUser()
-            ->when($request->has('filters'), function ($query) use ($request) {
-                foreach ($request->get('filters') as $filter) {
-                    $query->where($filter['column'], $filter['value']);
-                }
-            })
-            ->when($request->has('sort'), function ($query) use ($request) {
-                foreach ($request->get('sort') as $sort) {
-                    $query->orderBy($sort['key'], $sort['order']);
-                }
-            })
-            ->when(! $request->has('sort'), function ($query) {
-                $query->orderBy('id', 'desc');
-            })
-            ->when($request->has('search'), function ($query) use ($request) {
-                $query->where(function ($q) use ($request) {
-                    $q->where('name', 'like', '%'.$request->get('search').'%')
-                        ->orWhere('surname', 'like', '%'.$request->get('search').'%')
-                        ->orWhere('patronymic', 'like', '%'.$request->get('search').'%')
-                        ->orWhere('contract_number', 'like', '%'.$request->get('search').'%')
-                        ->orWhere('contract_series', 'like', '%'.$request->get('search').'%');
-                });
-            })
+            ->filters()
+            ->sort()
+            ->search()
             ->paginate($request->get('items_per_page'));
 
         return response()->json($receipts);
