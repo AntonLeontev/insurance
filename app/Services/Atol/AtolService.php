@@ -2,7 +2,9 @@
 
 namespace App\Services\Atol;
 
+use App\Models\Agency;
 use App\Models\Receipt;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Auth;
 
 class AtolService
@@ -20,16 +22,7 @@ class AtolService
     {
         $agency = Auth::user()->agency;
 
-        if ($agency->atol_token_expires->isFuture()) {
-            $token = $agency->atol_token;
-        } else {
-            $token = $this->getToken();
-
-            $agency->update([
-                'atol_token' => $token,
-                'atol_token_expires' => now()->addHours(24),
-            ]);
-        }
+        $token = $this->loadToken($agency);
 
         $clientName = "{$receipt->surname} {$receipt->name}";
         $clientName .= $receipt->patronymic
@@ -79,5 +72,30 @@ class AtolService
         ]);
 
         return $response->object();
+    }
+
+    public function report(Receipt $receipt): Response
+    {
+        $agency = Auth::user()->agency;
+
+        $token = $this->loadToken($agency);
+
+        return $this->api->report($token, $agency->group_code, $receipt->external_id);
+    }
+
+    private function loadToken(Agency $agency): string
+    {
+        if ($agency->atol_token_expires->isFuture()) {
+            $token = $agency->atol_token;
+        } else {
+            $token = $this->getToken();
+
+            $agency->update([
+                'atol_token' => $token,
+                'atol_token_expires' => now()->addHours(24),
+            ]);
+        }
+
+        return $token;
     }
 }

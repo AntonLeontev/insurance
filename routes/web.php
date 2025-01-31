@@ -72,6 +72,8 @@ Route::controller(ReceiptController::class)->group(function () {
         ->name('receipts.destroy');
     Route::post('receipts/submit', 'submit')
         ->name('receipts.submit');
+    Route::get('receipts/{receipt}/get-status', 'getStatus')
+        ->name('receipts.get-status');
 });
 
 Route::post('webhooks/atol', AtolWebhookController::class)->name('webhooks.atol');

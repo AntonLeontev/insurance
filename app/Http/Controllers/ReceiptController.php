@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ReceiptStatus;
 use App\Enums\Role;
 use App\Http\Requests\ReceiptDestroyRequest;
 use App\Http\Requests\ReceiptStoreRequest;
@@ -113,5 +114,44 @@ class ReceiptController extends Controller
         $receipt->status = $response->status;
 
         $receipt->save();
+    }
+
+    public function getStatus(Receipt $receipt, AtolService $atol): JsonResponse
+    {
+        abort_if($receipt->external_id === null, Response::HTTP_BAD_REQUEST, 'Чек не отправлен в Атол');
+        abort_if(Auth::user()->agency_id !== $receipt->agency_id, Response::HTTP_FORBIDDEN, 'Доступ запрещен');
+
+        if ($receipt->status === ReceiptStatus::DONE || $receipt->status === ReceiptStatus::FAIL) {
+            return response()->json($receipt);
+        }
+
+        $response = $atol->report($receipt);
+
+        if ($response->json('status') === 'wait') {
+            return response()->json($receipt);
+        }
+
+        if ($response->json('status') === 'fail') {
+            $receipt->update([
+                'status' => $response->json('status'),
+                'error_text' => $response->json('error.text'),
+            ]);
+        }
+
+        if ($response->json('status') === 'done') {
+            $receipt->update([
+                'status' => 'done',
+                'fiscal_receipt_number' => $response->json('payload.fiscal_receipt_number'),
+                'shift_number' => $response->json('payload.shift_number'),
+                'receipt_datetime' => $response->json('payload.receipt_datetime'),
+                'fn_number' => $response->json('payload.fn_number'),
+                'ecr_registration_number' => $response->json('payload.ecr_registration_number'),
+                'fiscal_document_number' => $response->json('payload.fiscal_document_number'),
+                'fiscal_document_attribute' => $response->json('payload.fiscal_document_attribute'),
+                'ofd_receipt_url' => $response->json('payload.ofd_receipt_url'),
+            ]);
+        }
+
+        return response()->json($receipt);
     }
 }

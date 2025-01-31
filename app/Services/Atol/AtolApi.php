@@ -25,4 +25,11 @@ class AtolApi
             ->withHeader('Token', $token)
             ->post($groupCode.'/sell', $data);
     }
+
+    public function report(string $token, string $groupCode, string $uuid): Response
+    {
+        return Http::atol()
+            ->withHeader('Token', $token)
+            ->get($groupCode.'/report/'.$uuid);
+    }
 }
