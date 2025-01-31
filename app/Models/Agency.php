@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\Ffd;
+use App\Enums\Sno;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -29,6 +30,7 @@ class Agency extends Model
     protected $casts = [
         'ffd' => Ffd::class,
         'atol_token_expires' => 'datetime',
+        'sno' => Sno::class,
     ];
 
     protected $hidden = [

@@ -18,4 +18,11 @@ class AtolApi
                 'pass' => $password,
             ]);
     }
+
+    public function sell(string $token, string $groupCode, array $data): Response
+    {
+        return Http::atol()
+            ->withHeader('Token', $token)
+            ->post($groupCode.'/sell', $data);
+    }
 }

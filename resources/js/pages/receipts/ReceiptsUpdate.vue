@@ -22,6 +22,7 @@
 			return this.errors[item] !== undefined;
 		}, 
 		errors: {},
+		data: {},
 	});
 
 	loadInsurers();
@@ -30,30 +31,33 @@
 	function loadReceipt() {
 		axios.get(route('receipts.show', {id: curRoute.params.id}))
 			.then(response => {
-				editForm.agency_id = response.data.agency_id;
-				editForm.name = response.data.name;
-				editForm.surname = response.data.surname;
-				editForm.patronymic = response.data.patronymic;
-				editForm.passport = response.data.passport;
-				editForm.insurer_name = response.data.insurer_name;
-				editForm.contract_name = response.data.contract_name;
-				editForm.contract_series = response.data.contract_series;
-				editForm.contract_number = response.data.contract_number;
-				editForm.client_email = response.data.client_email;
-				editForm.agent_email = response.data.agent_email;
-				editForm.amount = response.data.amount;
-				editForm.is_draft = response.data.is_draft;
+				editForm.data.agency_id = response.data.agency_id;
+				editForm.data.name = response.data.name;
+				editForm.data.surname = response.data.surname;
+				editForm.data.patronymic = response.data.patronymic;
+				editForm.data.passport = response.data.passport;
+				editForm.data.insurer_id = response.data.insurer_id;
+				editForm.data.insurer_name = response.data.insurer_name;
+				editForm.data.insurer_inn = response.data.insurer_inn;
+				editForm.data.contract_id = response.data.contract_id;
+				editForm.data.contract_name = response.data.contract_name;
+				editForm.data.contract_series = response.data.contract_series;
+				editForm.data.contract_number = response.data.contract_number;
+				editForm.data.client_email = response.data.client_email;
+				editForm.data.agent_email = response.data.agent_email;
+				editForm.data.amount = response.data.amount;
+				editForm.data.is_draft = response.data.is_draft;
 
-				const insurer = insurers.find(insurer => insurer.name === editForm.insurer_name);
+				const insurer = insurers.find(insurer => insurer.id === editForm.data.insurer_id);
 				Object.assign(selectedInsurer, insurer);
 			})
 	}
 
 	function loadContracts() {
-		const insurer = insurers.find(insurer => insurer.name === editForm.insurer_name);
+		const insurer = insurers.find(insurer => insurer.id === editForm.data.insurer_id);
 
 		Object.assign(selectedInsurer, insurer);
-		editForm.contract_name = null;
+		editForm.data.contract_id = null;
 	}
 	
 	function loadInsurers() {
@@ -63,11 +67,21 @@
 			})
 	}
 
-	function save() {
-		axios.put(route('receipts.update', {id: curRoute.params.id}), editForm)
+	function save(submit = null) {
+		axios.put(route('receipts.update', {id: curRoute.params.id}), editForm.data)
 			.then(response => {
+				editForm.data = response.data;
 				toastsStore.addSuccess("Сохранено", 2500);
 				editForm.errors = {};
+
+				if (submit === 'cash') {
+					editForm.data.payment_type = 'cash';
+					previewShow.value = true;
+				}
+				if (submit === 'cashless') {
+					editForm.data.payment_type = 'cashless';
+					previewShow.value = true;
+				}
 			})
 			.catch(error => {
 				editForm.errors = error.response.data.errors;
@@ -76,12 +90,10 @@
 	} 
 
 	function previewWithCash() {
-		previewShow.value = true;
-		editForm.payment_type = 'cash';
+		save('cash')
 	}
 	function previewWithoutCash() {
-		previewShow.value = true;
-		editForm.payment_type = 'cashless';
+		save('cashless');
 	}
 </script>
 
@@ -98,7 +110,7 @@
 						<v-text-field
 							clearable
 							label="Фамилия клиента"
-							v-model="editForm.surname"
+							v-model="editForm.data.surname"
 							variant="outlined"
 							:error="editForm.invalid('surname')"
 							:error-messages="editForm.errors.surname"
@@ -108,7 +120,7 @@
 						<v-text-field
 							clearable
 							label="Имя клиента"
-							v-model="editForm.name"
+							v-model="editForm.data.name"
 							variant="outlined"
 							:error="editForm.invalid('name')"
 							:error-messages="editForm.errors.name"
@@ -118,7 +130,7 @@
 						<v-text-field
 							clearable
 							label="Отчество клиента"
-							v-model="editForm.patronymic"
+							v-model="editForm.data.patronymic"
 							variant="outlined"
 							:error="editForm.invalid('patronymic')"
 							:error-messages="editForm.errors.patronymic"
@@ -128,7 +140,7 @@
 						<v-text-field
 							clearable
 							label="Паспорт"
-							v-model="editForm.passport"
+							v-model="editForm.data.passport"
 							variant="outlined"
 							:error="editForm.invalid('passport')"
 							:error-messages="editForm.errors.passport"
@@ -136,27 +148,27 @@
 						></v-text-field>
 
 						<v-select
-							v-model="editForm.insurer_name"
+							v-model="editForm.data.insurer_id"
 							:items="insurers"
 							item-title="name"
-							item-value="name"
+							item-value="id"
 							label="Страховая компания"
 							persistent-hint
-							:error="editForm.invalid('insurer_name')"
-							:error-messages="editForm.errors.insurer_name"
+							:error="editForm.invalid('insurer_id')"
+							:error-messages="editForm.errors.insurer_id"
 							variant="outlined"
 							@update:modelValue="loadContracts"
 						></v-select>
 
 						<v-select
-							v-model="editForm.contract_name"
+							v-model="editForm.data.contract_id"
 							:items="selectedInsurer.contracts"
 							item-title="name"
-							item-value="name"
+							item-value="id"
 							label="Тип договора"
 							persistent-hint
-							:error="editForm.invalid('contract_name')"
-							:error-messages="editForm.errors.contract_name"
+							:error="editForm.invalid('contract_id')"
+							:error-messages="editForm.errors.contract_id"
 							variant="outlined"
 							no-data-text="Выберите страховую компанию"
 						></v-select>
@@ -164,7 +176,7 @@
 						<v-text-field
 							clearable
 							label="Серия договора"
-							v-model="editForm.contract_series"
+							v-model="editForm.data.contract_series"
 							variant="outlined"
 							:error="editForm.invalid('contract_series')"
 							:error-messages="editForm.errors.contract_series"
@@ -174,7 +186,7 @@
 						<v-text-field
 							clearable
 							label="Номер договора"
-							v-model="editForm.contract_number"
+							v-model="editForm.data.contract_number"
 							variant="outlined"
 							:error="editForm.invalid('contract_number')"
 							:error-messages="editForm.errors.contract_number"
@@ -184,7 +196,7 @@
 						<v-text-field
 							clearable
 							label="Email клиента"
-							v-model="editForm.client_email"
+							v-model="editForm.data.client_email"
 							variant="outlined"
 							:error="editForm.invalid('client_email')"
 							:error-messages="editForm.errors.client_email"
@@ -195,7 +207,7 @@
 						<v-text-field
 							clearable
 							label="Email агента"
-							v-model="editForm.agent_email"
+							v-model="editForm.data.agent_email"
 							variant="outlined"
 							:error="editForm.invalid('agent_email')"
 							:error-messages="editForm.errors.agent_email"
@@ -206,7 +218,7 @@
 						<v-text-field
 							clearable
 							label="Сумма договора"
-							v-model="editForm.amount"
+							v-model="editForm.data.amount"
 							variant="outlined"
 							:error="editForm.invalid('amount')"
 							:error-messages="editForm.errors.amount"
@@ -223,6 +235,6 @@
 			</template>
 		</CrudPage>
 
-		<ReceiptPreview :receipt="editForm" :show="previewShow" @close="previewShow = false" />
+		<ReceiptPreview :receipt="editForm.data" :show="previewShow" @close="previewShow = false" />
 	</AppLayout>
 </template>

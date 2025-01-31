@@ -2,23 +2,33 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\PaymentType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
-class ReceiptUpdateRequest extends FormRequest
+class ReceiptSubmitRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return Auth::check() && Auth::user()->agency_id === $this->get('agency_id');
+        return Auth::check()
+            && Auth::user()->agency_id === $this->get('agency_id');
     }
 
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
     public function rules(): array
     {
         return [
+            'id' => ['nullable', 'exists:receipts,id'],
             'agency_id' => ['required', 'exists:agencies,id'],
+            'user_id' => ['nullable', 'exists:users,id'],
             'name' => ['required', 'string', 'max:255'],
             'surname' => ['required', 'string', 'max:255'],
             'patronymic' => ['nullable', 'string', 'max:255'],
@@ -30,6 +40,8 @@ class ReceiptUpdateRequest extends FormRequest
             'client_email' => ['required', 'email', 'max:255'],
             'agent_email' => ['required', 'email', 'max:255'],
             'amount' => ['required', 'numeric', 'decimal:0,2', 'min:0'],
+            'is_draft' => ['required', 'boolean'],
+            'payment_type' => ['required', 'string', Rule::enum(PaymentType::class)],
         ];
     }
 

@@ -6,7 +6,7 @@
 
 
 <template>
-<div class="fixed bottom-0 right-0 flex pb-4 pe-4 flex-column ga-2">
+<div class="fixed bottom-0 right-0 z-[2401] flex pb-4 pe-4 flex-column ga-2">
 	<v-alert
 		class="toast"
 		v-for="toast in store.toasts"

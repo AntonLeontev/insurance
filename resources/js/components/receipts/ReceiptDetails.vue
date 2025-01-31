@@ -22,6 +22,10 @@
 				<td>{{ props.receipt.insurer_name }}</td>
 			</tr>
 			<tr>
+				<td>ИНН страховой компании</td>
+				<td>{{ props.receipt.insurer_inn }}</td>
+			</tr>
+			<tr>
 				<td>Тип договора</td>
 				<td>{{ props.receipt.contract_name }}</td>
 			</tr>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AgencyController;
+use App\Http\Controllers\AtolWebhookController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\InsurerController;
@@ -60,7 +61,7 @@ Route::controller(ReceiptController::class)->group(function () {
     Route::get('receipts', 'index')
         ->name('receipts.index');
     Route::get('receipts/{receipt}', 'show')
-        ->whereNumber('receipt')
+        ->whereUuid('receipt')
         ->name('receipts.show');
     Route::post('receipts', 'store')
         ->middleware(['precognitive'])
@@ -69,7 +70,11 @@ Route::controller(ReceiptController::class)->group(function () {
         ->name('receipts.update');
     Route::delete('receipts/{receipt}', 'destroy')
         ->name('receipts.destroy');
+    Route::post('receipts/submit', 'submit')
+        ->name('receipts.submit');
 });
+
+Route::post('webhooks/atol', AtolWebhookController::class)->name('webhooks.atol');
 
 Route::view('reset-password', 'app')->name('password.reset');
 Route::view('create-password/{email}/{password}', 'app')->name('password.create');

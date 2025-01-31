@@ -2,7 +2,8 @@
 	import AppLayout from '@/layouts/AppLayout.vue';
 	import H1 from '@/components/H1.vue';
 	import CrudPage from '@/components/CrudPage.vue';
-	import { reactive } from 'vue';
+	import ReceiptPreview from '@/components/receipts/ReceiptPreview.vue';
+	import { reactive, ref } from 'vue';
 	import { useForm } from "laravel-precognition-vue";
 	import { useUserStore } from "@/stores/user";
 	import { useToastsStore } from "@/stores/toasts";
@@ -12,12 +13,19 @@
 
 	const insurers = reactive([]);
 	const selectedInsurer = reactive({});
+	const previewShow = ref(false);
 
 	function loadContracts() {
-		const insurer = insurers.find(insurer => insurer.name === createForm.insurer_name);
+		const insurer = insurers.find(insurer => insurer.id === createForm.insurer_id);
 
 		Object.assign(selectedInsurer, insurer);
-		createForm.contract_name = null;
+		createForm.contract_id = null;
+		createForm.insurer_name = insurer.name;
+		createForm.insurer_inn = insurer.inn;
+	}
+	function setContractName() {
+		const contract = selectedInsurer.contracts.find(contract => contract.id === createForm.contract_id);
+		createForm.contract_name = contract.name;
 	}
 	
 	function loadInsurers() {
@@ -26,6 +34,7 @@
 				Object.assign(insurers, response.data);
 			})
 	}
+	
 	loadInsurers();
 
 	const createForm = useForm("post", route("receipts.store"), {
@@ -34,8 +43,8 @@
 		surname: null,
 		patronymic: null,
 		passport: null,
-		insurer_name: null,
-		contract_name: null,
+		insurer_id: null,
+		contract_id: null,
 		contract_series: null,
 		contract_number: null,
 		client_email: null,
@@ -50,7 +59,7 @@
 
 		createForm.submit()
 			.then(response => {
-				toastsStore.addSuccess("Сохранено в черновике", 2500);
+				toastsStore.addSuccess("Сохранено в черновиках", 2500);
 				createForm.errors = {};
 				createForm.reset();
 			})
@@ -63,6 +72,25 @@
 		createForm.reset();
 		selectedInsurer.contracts = []
 	}
+
+	function previewWithCash() {
+		createForm.touch(['name', 'surname', 'patronymic', 'passport', 'insurer_id', 'contract_id', 'contract_series', 'contract_number', 'client_email', 'agent_email', 'amount'])
+			.validate({
+				onSuccess: (response) => {
+					previewShow.value = true;
+					createForm.payment_type = 'cash';
+				},
+			});
+	}
+	function previewWithoutCash() {
+		createForm.touch(['name', 'surname', 'patronymic', 'passport', 'insurer_id', 'contract_id', 'contract_series', 'contract_number', 'client_email', 'agent_email', 'amount'])
+			.validate({
+				onSuccess: (response) => {
+					previewShow.value = true;
+					createForm.payment_type = 'cashless';
+				},
+			});
+	}	
 </script>
 
 <template>
@@ -116,29 +144,30 @@
 						></v-text-field>
 
 						<v-select
-							v-model="createForm.insurer_name"
+							v-model="createForm.insurer_id"
 							:items="insurers"
 							item-title="name"
-							item-value="name"
+							item-value="id"
 							label="Страховая компания"
 							persistent-hint
-							:error="createForm.invalid('insurer_name')"
-							:error-messages="createForm.errors.insurer_name"
+							:error="createForm.invalid('insurer_id')"
+							:error-messages="createForm.errors.insurer_id"
 							variant="outlined"
 							@update:modelValue="loadContracts"
 						></v-select>
 
 						<v-select
-							v-model="createForm.contract_name"
+							v-model="createForm.contract_id"
 							:items="selectedInsurer.contracts"
 							item-title="name"
-							item-value="name"
+							item-value="id"
 							label="Тип договора"
 							persistent-hint
-							:error="createForm.invalid('contract_name')"
-							:error-messages="createForm.errors.contract_name"
+							:error="createForm.invalid('contract_id')"
+							:error-messages="createForm.errors.contract_id"
 							variant="outlined"
 							no-data-text="Выберите страховую компанию"
+							@update:modelValue="setContractName"
 						></v-select>
 
 						<v-text-field
@@ -195,13 +224,15 @@
 							hide-spin-buttons
 						></v-text-field>
 
-						<v-btn color="primary">Наличная оплата</v-btn>
-						<v-btn color="primary">Безналичная оплата</v-btn>
+						<v-btn color="primary" @click="previewWithCash">Наличная оплата</v-btn>
+						<v-btn color="primary" @click="previewWithoutCash">Безналичная оплата</v-btn>
 						<v-btn color="warning" variant="outlined" @click="saveAsDraft">Сохранить как черновик</v-btn>
 						<v-btn color="danger" variant="outlined" @click="clearForm">Очистить</v-btn>
 					</form>
 				</div>
 			</template>
 		</CrudPage>
+
+		<ReceiptPreview :receipt="createForm" :show="previewShow" @close="previewShow = false" />
 	</AppLayout>
 </template>
