@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('external_id')->nullable();
             $table->foreignIdFor(Agency::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
+            $table->string('receipt_type')->nullable()->default('sell');
             $table->string('name')->nullable();
             $table->string('surname')->nullable();
             $table->string('patronymic')->nullable();

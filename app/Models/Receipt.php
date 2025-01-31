@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Casts\AmountCast;
 use App\Enums\PaymentType;
 use App\Enums\ReceiptStatus;
+use App\Enums\ReceiptType;
 use App\Enums\Role;
 use App\Http\Requests\ReceiptSubmitRequest;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,6 +21,7 @@ class Receipt extends Model
         'external_id',
         'agency_id',
         'user_id',
+        'receipt_type',
         'name',
         'surname',
         'patronymic',
@@ -51,6 +53,7 @@ class Receipt extends Model
 
     protected $casts = [
         'is_draft' => 'boolean',
+        'receipt_type' => ReceiptType::class,
         'payment_type' => PaymentType::class,
         'amount' => AmountCast::class,
         'submited_at' => 'datetime',

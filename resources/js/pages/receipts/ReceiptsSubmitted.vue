@@ -13,7 +13,7 @@
 	const toastsStore = useToastsStore();
 
 	const headers = [
-        { title: 'ФИО', align: 'start', key: 'surname', value: item => `${item.surname} ${item.name} ${item.patronymic ?? ''}`, width: '20%' },
+        { title: 'ФИО', align: 'start', key: 'surname', width: '20%' },
         { title: 'Договор', key: 'contract_series', value: item => `${item.contract_series} ${item.contract_number}`, align: 'start' },
         { title: 'Страховая', key: 'insurer_name', align: 'start' },
 		{ title: 'Тип договора', key: 'contract_name', align: 'start' },
@@ -124,6 +124,19 @@
 					@update:options="loadItems"
 					density="comfortable"
 				>
+					<template v-slot:item.surname="{ item }">
+						<span class="">
+							{{ item.surname }} {{ item.name }} {{ item.patronymic ?? '' }}
+						</span>
+					</template>
+					<template v-slot:item.amount="{ item }">
+						<span class="">
+							<v-icon icon="mdi-arrow-bottom-left" color="primary" v-if="item.receipt_type === 'sell'" title="Приход" />
+							<v-icon icon="mdi-arrow-top-right" color="danger" v-if="item.receipt_type === 'sell refund'" title="Возврат прихода" />
+							{{ item.amount.toLocaleString() }}
+						</span>
+					</template>
+
 					<template v-slot:item.status="{ item }">
 						<span class="" v-if="item.status === 'wait'">
 							<v-icon icon="mdi-timer-sand" />
@@ -157,7 +170,7 @@
 							class="cursor-pointer me-2"
 							color="danger"
 							v-tooltip:bottom="'Пробить возврат'"
-							v-if="item.status === 'done' && userStore.user.role !== 'cashier'"
+							v-if="item.status === 'done' && userStore.user.role !== 'cashier' && item.receipt_type === 'sell'"
 							@click="openRefundModal(item)"
 						></v-icon>
 						<v-icon

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ReceiptStatus;
+use App\Enums\ReceiptType;
 use App\Enums\Role;
 use App\Http\Requests\ReceiptDestroyRequest;
 use App\Http\Requests\ReceiptStoreRequest;
@@ -124,6 +125,7 @@ class ReceiptController extends Controller
 
         $data = $receipt->toArray();
         $data['submited_at'] = now()->format('d.m.Y H:i:s');
+        $data['receipt_type'] = ReceiptType::SELL_REFUND->value;
         data_forget($data, 'id');
         data_forget($data, 'created_at');
         data_forget($data, 'updated_at');
