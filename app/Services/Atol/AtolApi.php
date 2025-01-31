@@ -26,6 +26,13 @@ class AtolApi
             ->post($groupCode.'/sell', $data);
     }
 
+    public function sellRefund(string $token, string $groupCode, array $data): Response
+    {
+        return Http::atol()
+            ->withHeader('Token', $token)
+            ->post($groupCode.'/sell_refund', $data);
+    }
+
     public function report(string $token, string $groupCode, string $uuid): Response
     {
         return Http::atol()

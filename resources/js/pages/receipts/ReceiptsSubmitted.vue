@@ -71,6 +71,18 @@
 		detailsModal.value = true
 	}
 
+	const refundModal = ref(false);
+	function openRefundModal(item) {
+		selectedReceipt.value = item
+		refundModal.value = true
+	}
+	function makeRefund() {
+		axios.post(route('receipts.refund', selectedReceipt.value?.id))
+			.then(response => loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value, search: search.value }))
+			.catch(error => toastsStore.handleResponseError(error))
+			.finally(() => refundModal.value = false)
+	}
+
 	const updatingStatus = ref(false);
 	function updateStatus(id) {
 		if (updatingStatus.value) {
@@ -84,7 +96,7 @@
 				let index = receipts.findIndex(receipt => receipt.id === id);
 				receipts[index] = response.data;
 
-				if (selectedReceipt.value.id === id) {
+				if (selectedReceipt.value?.id === id) {
 					selectedReceipt.value = response.data;
 				}
 			})
@@ -137,6 +149,16 @@
 							v-tooltip:bottom="'Обновить статус'"
 							v-if="item.status === 'wait'"
 							@click="updateStatus(item.id)"
+						></v-icon>
+						<v-icon
+							icon="mdi-arrow-u-up-right-bold"
+							variant="plain"
+							size="small"
+							class="cursor-pointer me-2"
+							color="danger"
+							v-tooltip:bottom="'Пробить возврат'"
+							v-if="item.status === 'done' && userStore.user.role !== 'cashier'"
+							@click="openRefundModal(item)"
 						></v-icon>
 						<v-icon
 						class="cursor-pointer"
@@ -192,6 +214,33 @@
 
 				<template v-slot:actions>
 					<v-btn @click="detailsModal = false">Отмена</v-btn>
+				</template>
+			</v-card>
+		</v-dialog>
+
+		<v-dialog
+			v-model="refundModal"
+			width="auto"
+			max-width="600"
+			min-width="400"
+		>
+			<v-card
+				prepend-icon="mdi-receipt-text-outline"
+			>
+				<template v-slot:title>
+					<div class="justify-between d-flex align-center">
+						Пробить возврат
+						<v-btn icon="mdi-close" variant="plain" @click="refundModal = false"></v-btn>
+					</div>
+				</template>
+
+				<v-card-text>
+					Вы уверены, что хотите пробить возврат на сумму {{ selectedReceipt?.amount.toLocaleString() }}р?
+				</v-card-text>
+
+				<template v-slot:actions>
+					<v-btn @click="makeRefund">Да</v-btn>
+					<v-btn @click="refundModal = false">Отмена</v-btn>
 				</template>
 			</v-card>
 		</v-dialog>

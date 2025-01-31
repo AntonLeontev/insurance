@@ -7,9 +7,15 @@ use App\Http\Controllers\ContractController;
 use App\Http\Controllers\InsurerController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\UserController;
+use App\Models\Receipt;
+use App\Services\Atol\AtolService;
 use Illuminate\Support\Facades\Route;
 
 if (config('app.url') === 'http://127.0.0.1:8000') {
+    Route::get('test', function (AtolService $atol) {
+        $r = Receipt::find('9e1a340e-fe98-46ab-80f7-5a977f927b0f');
+        dd($atol->report($r)->json());
+    });
 }
 
 Route::post('login', [AuthController::class, 'login'])
@@ -74,6 +80,8 @@ Route::controller(ReceiptController::class)->group(function () {
         ->name('receipts.submit');
     Route::get('receipts/{receipt}/get-status', 'getStatus')
         ->name('receipts.get-status');
+    Route::post('receipts/{receipt}/refund', 'refund')
+        ->name('receipts.refund');
 });
 
 Route::post('webhooks/atol', AtolWebhookController::class)->name('webhooks.atol');

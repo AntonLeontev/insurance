@@ -116,6 +116,22 @@ class ReceiptController extends Controller
         $receipt->save();
     }
 
+    public function refund(Receipt $receipt, AtolService $atol)
+    {
+        abort_if($receipt->status !== ReceiptStatus::DONE, Response::HTTP_BAD_REQUEST, 'Нельзя сделать возврат по неудачному чеку');
+        abort_if(Auth::user()->agency_id !== $receipt->agency_id, Response::HTTP_FORBIDDEN, 'Нет доступа');
+        abort_if(Auth::user()->role === Role::CASHIER, Response::HTTP_FORBIDDEN, 'Нет доступа');
+
+        $data = $receipt->toArray();
+        $data['submited_at'] = now()->format('d.m.Y H:i:s');
+        data_forget($data, 'id');
+        data_forget($data, 'created_at');
+        data_forget($data, 'updated_at');
+
+        $newReceipt = Receipt::create($data);
+        $atol->sellRefund($newReceipt);
+    }
+
     public function getStatus(Receipt $receipt, AtolService $atol): JsonResponse
     {
         abort_if($receipt->external_id === null, Response::HTTP_BAD_REQUEST, 'Чек не отправлен в Атол');
