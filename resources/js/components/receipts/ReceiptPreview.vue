@@ -1,7 +1,7 @@
 <script setup>
 import ReceiptDetails from '@/components/receipts/ReceiptDetails.vue';
 import axios from 'axios';
-import { defineProps, ref } from 'vue';
+import { defineProps, ref, defineEmits } from 'vue';
 import { useToastsStore } from '@/stores/toasts';
 
 const toastsStore = useToastsStore();
@@ -11,6 +11,8 @@ const props = defineProps({
 	show: { required: true, type: Boolean },
 })
 
+const emit = defineEmits(['submitted'])
+
 const submitting = ref(false);
 
 function submit() {
@@ -18,7 +20,7 @@ function submit() {
 
 	axios.post(route('receipts.submit'), props.receipt)
 		.then(response => {
-
+			emit('submitted');
 		})
 		.catch(error => toastsStore.handleResponseError(error))
 		.finally(() => submitting.value = false)

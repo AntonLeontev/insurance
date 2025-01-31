@@ -91,6 +91,11 @@
 				},
 			});
 	}	
+	function onSubmitted() {
+		clearForm();
+		previewShow.value = false;
+		toastsStore.addSuccess('Чек успешно отправлен в Атол', 2500);
+	}
 </script>
 
 <template>
@@ -233,6 +238,6 @@
 			</template>
 		</CrudPage>
 
-		<ReceiptPreview :receipt="createForm" :show="previewShow" @close="previewShow = false" />
+		<ReceiptPreview :receipt="createForm" :show="previewShow" @close="previewShow = false" @submitted="onSubmitted" />
 	</AppLayout>
 </template>

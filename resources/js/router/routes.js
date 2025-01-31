@@ -44,9 +44,9 @@ export default [
         meta: { auth: true },
     },
     {
-        path: "/receipts/sent",
-        component: () => import("@/pages/receipts/ReceiptsSent.vue"),
-        name: "receipts.sent",
+        path: "/receipts/submitted",
+        component: () => import("@/pages/receipts/ReceiptsSubmitted.vue"),
+        name: "receipts.submitted",
         meta: { auth: true },
     },
     {

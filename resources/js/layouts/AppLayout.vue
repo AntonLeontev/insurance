@@ -53,7 +53,7 @@ const user = useUserStore().user;
 					</RouterLink>
                 </v-list-item>
                 <v-list-item>
-                    <RouterLink :to="{ name: 'receipts.sent' }" class="d-flex ga-1" :class="$route.name === 'receipts.sent' ? 'text-primary' : ''">
+                    <RouterLink :to="{ name: 'receipts.submitted' }" class="d-flex ga-1" :class="$route.name === 'receipts.submitted' ? 'text-primary' : ''">
 						<v-icon icon="mdi-file-send-outline"></v-icon>
 						Оформленные чеки
 					</RouterLink>

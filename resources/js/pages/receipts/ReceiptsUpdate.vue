@@ -235,6 +235,11 @@
 			</template>
 		</CrudPage>
 
-		<ReceiptPreview :receipt="editForm.data" :show="previewShow" @close="previewShow = false" />
+		<ReceiptPreview 
+			:receipt="editForm.data" 
+			:show="previewShow" 
+			@close="previewShow = false" 
+			@submitted="$router.push({name: 'receipts.submitted'})" 
+		/>
 	</AppLayout>
 </template>
