@@ -31,11 +31,17 @@ class AtolService
             ]);
         }
 
+		$clientName = "{$receipt->surname} {$receipt->name}";
+		$clientName .= $receipt->patronymic 
+			? " {$receipt->patronymic} {$receipt->passport}" 
+			: " {$receipt->passport}";
+
         $response = $this->api->sell($token, $agency->group_code, [
             'external_id' => $receipt->id,
             'receipt' => [
                 'client' => [
                     'email' => $receipt->client_email,
+					'name' => $clientName,
                 ],
                 'company' => [
                     'email' => $receipt->agent_email,
@@ -71,8 +77,6 @@ class AtolService
             ],
             'timestamp' => $receipt->submited_at->format('d.m.Y H:i:s'),
         ]);
-
-        dump($response->object());
 
         return $response->object();
     }
