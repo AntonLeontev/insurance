@@ -56,9 +56,9 @@ Route::controller(ContractController::class)->group(function () {
     Route::post('contracts', 'store')
         ->middleware(['precognitive'])
         ->name('contracts.store');
-    // Route::post('contracts/update', 'update')
-    // 	->middleware(['precognitive'])
-    // 	->name('contracts.update');
+    Route::put('contracts/{contract}', 'update')
+        ->middleware(['precognitive'])
+        ->name('contracts.update');
     Route::delete('contracts/{contract}', 'destroy')
         ->name('contracts.destroy');
 });

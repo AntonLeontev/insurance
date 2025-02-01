@@ -121,8 +121,8 @@
 			})
 	}
 
-	const deleteContractModal = ref(false);
 	const selectedContract = ref(null);
+	const deleteContractModal = ref(false);
 	function openDeleteContractModal(contract) {
 		selectedContract.value = contract
 		deleteContractModal.value = true;
@@ -137,6 +137,38 @@
 				deleteContractModal.value = false;
 			})
 			.catch(error => {
+				toastsStore.handleResponseError(error);
+			})
+	}
+	const editContractModal = ref(false);
+	const editContractForm = reactive({
+		data: {},
+		errors: {},
+		processing: false,
+		invalid(item) {
+			return this.errors[item] !== undefined;
+		},
+	});
+	function openEditContractModal(contract) {
+		selectedContract.value = contract
+		editContractForm.data.name = contract.name
+		editContractModal.value = true;
+	}
+	function closeEditContractModal() {
+		editContractModal.value = false;
+	}
+	function editContract() {
+		axios.put(route('contracts.update', selectedContract.value.id), editContractForm.data)	
+			.then(response => {
+				let contracts = insurers.find(insurer => insurer.id === selectedContract.value.insurer_id).contracts;
+				let index = contracts.indexOf(selectedContract.value);
+
+				contracts[index] = response.data;
+					
+				editContractModal.value = false;
+			})
+			.catch(error => {
+				editContractForm.errors = error.response.data.errors;
 				toastsStore.handleResponseError(error);
 			})
 	}
@@ -188,7 +220,10 @@
 								>
 									{{ contract.name }}
 
-									<v-icon icon="mdi-delete" color="danger" v-tooltip:bottom="`Удалить ${contract.name}`"
+									<v-icon icon="mdi-pencil" v-tooltip:bottom="`Редактировать`" 
+										@click.stop="openEditContractModal(contract)"
+									></v-icon>
+									<v-icon icon="mdi-delete" color="danger" v-tooltip:bottom="`Удалить`"
 										size="small"
 										@click.stop="openDeleteContractModal(contract)"
 									></v-icon>
@@ -345,7 +380,7 @@
 				</template>
 
 				<v-card-text>
-					Добавление договора в список СК {{ selectedInsurer?.name }}.
+					Добавление договора в список {{ selectedInsurer?.name }}.
 
 					<form class="flex-col mt-3 d-flex ga-2" @submit.prevent="addContract">
 						<v-text-field v-model="addContractForm.name" label="Название" variant="outlined" persistant-hint
@@ -357,6 +392,34 @@
 				<template v-slot:actions>
 					<v-btn @click="addContract" color="primary">Добавить</v-btn>
 					<v-btn @click="closeAddContractModal">Отмена</v-btn>
+				</template>
+			</v-card>
+		</v-dialog>
+
+		<v-dialog
+			v-model="editContractModal"
+			width="auto"
+			min-width="400"
+			max-width="800"
+		>
+			<v-card>
+				<template v-slot:title>
+					<div class="justify-between d-flex align-center">
+						Редактировать
+						<v-btn icon="mdi-close" variant="plain" @click="closeEditContractModal"></v-btn>
+					</div>
+				</template>
+
+				<v-card-text>
+					<v-text-field v-model="editContractForm.data.name" label="Название" variant="outlined" persistant-hint
+						:error="editContractForm.invalid('name')" :error-messages="editContractForm.errors.name"
+						@keyup.enter.stop="editContract"
+					></v-text-field>
+				</v-card-text>
+
+				<template v-slot:actions>
+					<v-btn @click="editContract" color="primary">Сохранить</v-btn>
+					<v-btn @click="closeEditContractModal">Отмена</v-btn>
 				</template>
 			</v-card>
 		</v-dialog>
