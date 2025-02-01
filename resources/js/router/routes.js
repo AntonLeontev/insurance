@@ -67,6 +67,12 @@ export default [
         name: "receipts.details",
         meta: { auth: true },
     },
+    {
+        path: "/receipts/refund",
+        component: () => import("@/pages/receipts/ReceiptsRefund.vue"),
+        name: "receipts.refund",
+        meta: { auth: true },
+    },
     { path: "/login", component: Login, name: "login" },
     {
         path: "/forgot-password",

@@ -46,6 +46,12 @@ const user = useUserStore().user;
 						Страховые продукты
 					</RouterLink>
                 </v-list-item>
+                <v-list-item v-if="user.role === 'admin' || user.role === 'senior cashier'">
+                    <RouterLink :to="{ name: 'receipts.refund' }" class="d-flex ga-1" :class="$route.name === 'receipts.refund' ? 'text-primary' : ''">
+						<v-icon icon="mdi-arrow-u-up-left-bold"></v-icon>
+						Возврат чека
+					</RouterLink>
+                </v-list-item>
                 <v-list-item>
                     <RouterLink :to="{ name: 'receipts.drafts' }" class="d-flex ga-1" :class="$route.name === 'receipts.drafts' ? 'text-primary' : ''">
 						<v-icon icon="mdi-file-send-outline"></v-icon>

@@ -1,5 +1,5 @@
 <template>
-	<v-table density="compact" :style="{width: props.width}">
+	<v-table density="compact" :style="{width: props.width}" v-if="props.receipt !== null">
 		<tbody>
 			<tr>
 				<td width="45%">Фaмилия</td>
