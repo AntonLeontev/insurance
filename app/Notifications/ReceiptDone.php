@@ -46,7 +46,7 @@ class ReceiptDone extends Notification implements ShouldQueue
                 $receipt->contract_number,
                 $receipt->amount,
             ))
-            ->action('Посмотреть чек', url('/'));
+            ->action('Посмотреть чек', url('/receipts/'.$receipt->id.'/details'));
     }
 
     /**

@@ -1,8 +1,8 @@
 <template>
-	<v-table density="compact">
+	<v-table density="compact" :style="{width: props.width}">
 		<tbody>
 			<tr>
-				<td>Фaмилия</td>
+				<td width="45%">Фaмилия</td>
 				<td>{{ props.receipt.surname }}</td>
 			</tr>
 			<tr>
@@ -111,9 +111,8 @@
 </template>
 
 <script setup>
-	import { defineProps } from 'vue';
-
 	const props = defineProps({
 		receipt: { required: true, default: {} },
+		width: { required: false },
 	})
 </script>

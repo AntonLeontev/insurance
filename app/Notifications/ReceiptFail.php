@@ -45,7 +45,7 @@ class ReceiptFail extends Notification
                 $receipt->contract_number,
                 $receipt->amount,
             ))
-            ->action('Посмотреть чек', url('/'));
+            ->action('Посмотреть чек', url('/receipts/'.$receipt->id.'/details'));
     }
 
     /**
