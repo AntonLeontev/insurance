@@ -23,11 +23,15 @@ class CreateUser extends Command
         $email = $this->ask('Email');
         $name = $this->ask('Name');
         $password = $this->ask('Password');
+        $agencyId = $this->ask('Agency id');
 
         $user = User::create([
             'email' => $email,
             'name' => $name,
             'password' => Hash::make($password),
+            'role' => 'admin',
+            'email_verified_at' => now(),
+            'agency_id' => $agencyId,
         ]);
 
         if ($user) {

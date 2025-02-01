@@ -32,6 +32,7 @@ class UserInvited extends Notification implements ShouldQueue
         $notifiable->load('agency');
 
         return (new MailMessage)
+            ->subject('Приглашение в агенство')
             ->line("Вы приглашены в агенство {$notifiable->agency->name}.")
             ->action('Присоединиться', route('password.create', [$notifiable->email, $this->temporalPassword]));
     }
