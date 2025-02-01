@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Receipt;
+use App\Models\User;
+use App\Notifications\ReceiptDone;
+use App\Notifications\ReceiptFail;
 use Illuminate\Http\Request;
 
 class AtolWebhookController extends Controller
@@ -11,11 +14,15 @@ class AtolWebhookController extends Controller
     {
         $receipt = Receipt::find($request->json('external_id'));
 
+        $user = User::find($receipt->user_id);
+
         if ($request->json('status') === 'fail') {
             $receipt->update([
                 'status' => $request->json('status'),
                 'error_text' => $request->json('error.text'),
             ]);
+
+            $user->notify(new ReceiptFail($receipt->id));
         }
 
         if ($request->json('status') === 'done') {
@@ -30,6 +37,8 @@ class AtolWebhookController extends Controller
                 'fiscal_document_attribute' => $request->json('payload.fiscal_document_attribute'),
                 'ofd_receipt_url' => $request->json('payload.ofd_receipt_url'),
             ]);
+
+            $user->notify(new ReceiptDone($receipt->id));
         }
     }
 }
