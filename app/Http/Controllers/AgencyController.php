@@ -25,6 +25,12 @@ class AgencyController extends Controller
 
     public function updateAtol(AgencyUpdateAtolRequest $request, AtolService $service)
     {
+        $agency = auth()->user()->agency;
+        $agency->update([
+            'group_code' => $request->validated('group_code'),
+            'ffd' => $request->validated('ffd'),
+        ]);
+
         $token = $service->getToken($request->validated('atol_login'), $request->validated('atol_password'));
 
         $data = [
@@ -33,7 +39,6 @@ class AgencyController extends Controller
             'atol_token_expires' => now()->addHours(24),
         ];
 
-        $agency = auth()->user()->agency;
         $agency->update($data);
     }
 

@@ -25,7 +25,7 @@ class AtolService
 
         $token = $this->loadToken($agency);
 
-        $dto = ReceiptRequestDTO::fromReceipt($receipt, $agency);
+        $dto = ReceiptRequestDTO::fromReceipt($receipt, $agency, $agency->ffd->ApiVersion());
 
         $response = $this->api->sell($token, $agency->group_code, $dto->toArray());
 
@@ -38,7 +38,7 @@ class AtolService
 
         $token = $this->loadToken($agency);
 
-        $dto = ReceiptRequestDTO::fromReceipt($receipt, $agency);
+        $dto = ReceiptRequestDTO::fromReceipt($receipt, $agency, $agency->ffd->ApiVersion());
 
         $response = $this->api->sellRefund($token, $agency->group_code, $dto->toArray());
 
