@@ -112,7 +112,7 @@ readonly class ReceiptRequestDTO implements JsonSerializable
                 'total' => $this->amount,
             ],
             'service' => [
-                'callback_url' => 'http://45.146.165.254:8080/webhooks/atol',
+                'callback_url' => config('app.url') === 'http://127.0.0.1:8000' ? 'http://45.146.165.254:8080/webhooks/atol' : route('webhooks.atol'),
             ],
             'timestamp' => $this->submittedAt->format('d.m.Y H:i:s'),
         ];
