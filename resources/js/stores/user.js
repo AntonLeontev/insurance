@@ -27,7 +27,7 @@ export const useUserStore = defineStore("user", () => {
     function logout() {
         user.value = null;
 
-        axios.post("logout");
+        axios.post("/logout");
     }
 
     return { user, getUser, logout, setUser, setAgency };
