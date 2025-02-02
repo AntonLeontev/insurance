@@ -140,7 +140,7 @@
 						<span class="">
 							<v-icon icon="mdi-arrow-bottom-left" color="primary" v-if="item.receipt_type === 'sell'" title="Приход" />
 							<v-icon icon="mdi-arrow-top-right" color="danger" v-if="item.receipt_type === 'sell refund'" title="Возврат прихода" />
-							{{ item.amount.toLocaleString() }}
+							{{ item.amount.toLocaleString('ru-RU')+' ₽' }}
 						</span>
 					</template>
 

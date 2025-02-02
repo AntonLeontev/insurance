@@ -17,7 +17,7 @@
         { title: 'Договор', key: 'contract_series', value: item => `${item.contract_series} ${item.contract_number}`, align: 'start' },
         { title: 'Страховая', key: 'insurer_name', align: 'start' },
 		{ title: 'Тип договора', key: 'contract_name', align: 'start' },
-		{ title: 'Стоимость', key: 'amount', align: 'start' },
+		{ title: 'Стоимость', key: 'amount', align: 'start', value: item => item.amount.toLocaleString('ru-RU')+' ₽' },
 		{ title: 'Действия', key: 'actions', align: 'end', sortable: false }
     ];
 	const receipts = reactive([]);
