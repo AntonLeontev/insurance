@@ -198,10 +198,10 @@
 				<v-card-text>
 					<ReceiptDetails :receipt="selectedReceipt" />
 
-					<div class="flex-col mt-6 d-flex ga-3">
+					<!-- <div class="flex-col mt-6 d-flex ga-3">
 						<v-btn color="primary" prepend-icon="mdi-cash">Пробить за наличные</v-btn>
 						<v-btn color="primary" prepend-icon="mdi-credit-card-outline">Пробить за безналичный расчет</v-btn>
-					</div>
+					</div> -->
 				</v-card-text>
 
 				<template v-slot:actions>
