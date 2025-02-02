@@ -109,7 +109,6 @@
 				<div class="justify-center d-flex">
 					<form class="max-w-[600px] w-100 mx-auto d-flex flex-col ga-3 mb-12">
 						<v-text-field
-							clearable
 							label="Фамилия клиента"
 							v-model="createForm.surname"
 							variant="outlined"
@@ -119,7 +118,6 @@
 						></v-text-field>
 						
 						<v-text-field
-							clearable
 							label="Имя клиента"
 							v-model="createForm.name"
 							variant="outlined"
@@ -129,7 +127,6 @@
 						></v-text-field>
 
 						<v-text-field
-							clearable
 							label="Отчество клиента"
 							v-model="createForm.patronymic"
 							variant="outlined"
@@ -139,7 +136,6 @@
 						></v-text-field>
 
 						<v-text-field
-							clearable
 							label="Паспорт"
 							v-model="createForm.passport"
 							variant="outlined"
@@ -176,7 +172,6 @@
 						></v-select>
 
 						<v-text-field
-							clearable
 							label="Серия договора"
 							v-model="createForm.contract_series"
 							variant="outlined"
@@ -186,7 +181,6 @@
 						></v-text-field>
 
 						<v-text-field
-							clearable
 							label="Номер договора"
 							v-model="createForm.contract_number"
 							variant="outlined"
@@ -196,7 +190,6 @@
 						></v-text-field>
 
 						<v-text-field
-							clearable
 							label="Email клиента"
 							v-model="createForm.client_email"
 							variant="outlined"
@@ -207,7 +200,6 @@
 						></v-text-field>
 
 						<v-text-field
-							clearable
 							label="Email агента"
 							v-model="createForm.agent_email"
 							variant="outlined"
@@ -218,7 +210,6 @@
 						></v-text-field>
 
 						<v-text-field
-							clearable
 							label="Сумма договора"
 							v-model="createForm.amount"
 							variant="outlined"
