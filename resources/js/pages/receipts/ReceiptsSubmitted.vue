@@ -110,6 +110,13 @@
 		<CrudPage>
 			<template v-slot:header>
 				<H1>Оформленные чеки</H1>
+
+				<div class="justify-start mt-3 d-flex">
+					<v-text-field v-model="search" density="compact" placeholder="Поиск" variant="outlined" hide-details max-width="300px" 
+						append-inner-icon="mdi-magnify"
+						clearable
+					/>
+				</div>
 			</template>
 
 			<template v-slot:content>
