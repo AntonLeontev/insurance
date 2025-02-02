@@ -35,10 +35,10 @@
             <v-card class="px-6 py-8 mx-auto" max-width="344">
                 <v-form @submit.prevent="onSubmit">
                     <v-text-field class="mb-2" label="Email" name="email" type="email"
-                        prepend-inner-icon="mdi-at"></v-text-field>
+                        prepend-inner-icon="mdi-at" variant="outlined"></v-text-field>
 
                     <v-text-field :readonly="loading" label="Пароль" type="password" name="password"
-                        prepend-inner-icon="mdi-lock-outline"></v-text-field>
+                        prepend-inner-icon="mdi-lock-outline" variant="outlined"></v-text-field>
 
 					<div class="mt-n3 text-end hover-blue">
 						<router-link :to="{name: 'forgot-password'}" class="underline text-caption">Забыли пароль?</router-link>
