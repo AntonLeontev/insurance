@@ -7,9 +7,11 @@
 	import { useForm } from "laravel-precognition-vue";
 	import { useUserStore } from "@/stores/user";
 	import { useToastsStore } from "@/stores/toasts";
+	import { useRouter } from 'vue-router';
 
 	const userStore = useUserStore();
 	const toastsStore = useToastsStore();
+	const router = useRouter();
 
 	const insurers = reactive([]);
 	const selectedInsurer = reactive({});
@@ -92,9 +94,8 @@
 			});
 	}	
 	function onSubmitted() {
-		clearForm();
-		previewShow.value = false;
 		toastsStore.addSuccess('Чек успешно отправлен в Атол', 2500);
+		router.push({name: 'receipts.submitted'});
 	}
 </script>
 
