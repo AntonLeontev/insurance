@@ -130,9 +130,15 @@ class ReceiptController extends Controller
         data_forget($data, 'id');
         data_forget($data, 'created_at');
         data_forget($data, 'updated_at');
+        data_forget($data, 'external_id');
 
         $newReceipt = Receipt::create($data);
-        $atol->sellRefund($newReceipt);
+        $response = $atol->sellRefund($newReceipt);
+
+        $newReceipt->external_id = $response->uuid;
+        $newReceipt->status = $response->status;
+
+        $newReceipt->save();
     }
 
     public function getStatus(Receipt $receipt, AtolService $atol): JsonResponse
