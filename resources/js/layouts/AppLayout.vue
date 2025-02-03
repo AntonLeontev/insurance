@@ -14,7 +14,9 @@ const user = useUserStore().user;
 			<Profile />
         </v-app-bar>
 
-        <v-navigation-drawer>
+        <v-navigation-drawer
+			mobile-breakpoint="300"
+		>
             <v-list>
                 <v-list-item>
                     <RouterLink :to="{ name: 'home' }" class="d-flex ga-1" :class="$route.name === 'home' ? 'text-primary' : ''">
