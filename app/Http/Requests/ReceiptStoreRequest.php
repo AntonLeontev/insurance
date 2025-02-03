@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Role;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
@@ -22,6 +23,12 @@ class ReceiptStoreRequest extends FormRequest
      */
     public function rules(): array
     {
+        $amountRules = ['required', 'numeric', 'decimal:0,2', 'min:0'];
+
+        if (Auth::user()->role === Role::CASHIER) {
+            $amountRules[] = 'max:500000';
+        }
+
         return [
             'agency_id' => ['required', 'exists:agencies,id'],
             'name' => ['required', 'string', 'max:255'],
@@ -34,7 +41,7 @@ class ReceiptStoreRequest extends FormRequest
             'contract_number' => ['required', 'string', 'max:255'],
             'client_email' => ['required', 'email', 'max:255'],
             'agent_email' => ['required', 'email', 'max:255'],
-            'amount' => ['required', 'numeric', 'decimal:0,2', 'min:0'],
+            'amount' => $amountRules,
             'is_draft' => ['required', 'boolean'],
         ];
     }
