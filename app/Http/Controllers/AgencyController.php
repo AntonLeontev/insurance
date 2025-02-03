@@ -104,7 +104,7 @@ class AgencyController extends Controller
             abort(Response::HTTP_BAD_REQUEST, 'Пользователь уже принял приглашение');
         }
         if ($user->agency_id !== $agency->id) {
-            abort(Response::HTTP_BAD_REQUEST, 'Нельзя пригласить пользователя другого агенства');
+            abort(Response::HTTP_BAD_REQUEST, 'Нельзя пригласить пользователя другого агентства');
         }
 
         $token = str()->random(16);

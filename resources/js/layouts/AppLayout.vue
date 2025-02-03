@@ -31,7 +31,7 @@ const user = useUserStore().user;
                 <v-list-item v-if="user.role === 'admin'">
                     <RouterLink :to="{ name: 'agency-settings' }" class="d-flex ga-1" :class="$route.name === 'agency-settings' ? 'text-primary' : ''">
 						<v-icon icon="mdi-cog"></v-icon>
-						Настройки агенства
+						Настройки агентства
 					</RouterLink>
                 </v-list-item>
                 <v-list-item v-if="user.role === 'admin'">
