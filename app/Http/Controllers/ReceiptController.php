@@ -28,7 +28,7 @@ class ReceiptController extends Controller
             abort_if($receipt->agency_id !== Auth::user()->agency_id, Response::HTTP_FORBIDDEN, 'Доступ запрещен');
         }
 
-        return response()->json($receipt);
+        return response()->json($receipt->load('user'));
     }
 
     public function index(Request $request): JsonResponse
@@ -38,6 +38,7 @@ class ReceiptController extends Controller
             ->filters()
             ->sort()
             ->search()
+            ->with(['user' => fn ($q) => $q->select(['email', 'name', 'id'])])
             ->paginate($request->get('items_per_page'));
 
         return response()->json($receipts);

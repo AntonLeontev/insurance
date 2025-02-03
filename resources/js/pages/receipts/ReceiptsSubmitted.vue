@@ -13,12 +13,16 @@
 	const toastsStore = useToastsStore();
 
 	const headers = [
-        { title: 'ФИО', align: 'start', key: 'surname', width: '20%' },
+        { title: 'ФИО', align: 'start', key: 'surname' },
         { title: 'Договор', key: 'contract_series', value: item => `${item.contract_series} ${item.contract_number}`, align: 'start' },
         { title: 'Страховая', key: 'insurer_name', align: 'start' },
 		{ title: 'Тип договора', key: 'contract_name', align: 'start' },
 		{ title: 'Стоимость', key: 'amount', align: 'start' },
 		{ title: 'Статус', key: 'status', align: 'start' },
+		{ title: 'Кассир', key: 'user.email', align: 'start' },
+		{ title: 'Номер ФН', key: 'fn_number', align: 'start' },
+		{ title: 'ФНД', key: 'fiscal_document_number', align: 'start' },
+		{ title: 'ФПД', key: 'fiscal_document_attribute', align: 'start' },
 		{ title: 'Действия', key: 'actions', align: 'end', sortable: false }
     ];
 	const receipts = reactive([]);

@@ -11,6 +11,7 @@ use App\Http\Requests\ReceiptSubmitRequest;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
 
 class Receipt extends Model
@@ -124,5 +125,10 @@ class Receipt extends Model
         $receipt->save();
 
         return $receipt;
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }
