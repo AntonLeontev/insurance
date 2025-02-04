@@ -16,7 +16,7 @@
 		variant="tonal"
   	>
 		<div class="toast__content">
-			<span>{{ toast.text }}</span>
+			<span class="min-w-0 break-words">{{ toast.text }}</span>
 			<v-btn icon="mdi-close" variant="text" density="compact" @click="store.remove(toast.id)"></v-btn>
 		</div>
 	</v-alert>

@@ -57,6 +57,7 @@ class ReceiptController extends Controller
             'insurer_name' => $insurer->name,
             'insurer_inn' => $insurer->inn,
             'contract_name' => $contract->name,
+            'vat' => $contract->vat,
         ]);
     }
 
@@ -75,6 +76,7 @@ class ReceiptController extends Controller
             'insurer_name' => $insurer->name,
             'insurer_inn' => $insurer->inn,
             'contract_name' => $contract->name,
+            'vat' => $contract->vat,
         ]);
 
         return response()->json($receipt);
@@ -106,6 +108,7 @@ class ReceiptController extends Controller
         $receipt->insurer_name = $insurer->name;
         $receipt->insurer_inn = $insurer->inn;
         $receipt->contract_name = $contract->name;
+        $receipt->vat = $contract->vat;
         $receipt->submited_at = now();
         $receipt->is_draft = false;
         $receipt->payment_type = $request->get('payment_type');

@@ -13,6 +13,15 @@
 
 	const insurers = reactive([]);
 
+	const vats = [
+		{ label: 'Без НДС', value: 'none' },
+		{ label: 'НДС 0%', value: 'vat0' },
+		{ label: 'НДС 10%', value: 'vat10' },
+		{ label: 'НДС по ставке 10/110', value: 'vat110' },
+		{ label: 'НДС 20%', value: 'vat20' },
+		{ label: 'НДС по ставке 20/120', value: 'vat120' },
+	];
+
 	loadInsurers();
 
 	function loadInsurers() {
@@ -102,6 +111,7 @@
 	const addContractForm = useForm('post', route('contracts.store'), {
 		insurer_id: null,
 		name: null,
+		vat: null,
 	})
 	function closeAddContractModal() {
 		addContractModal.value = false;
@@ -152,10 +162,12 @@
 	function openEditContractModal(contract) {
 		selectedContract.value = contract
 		editContractForm.data.name = contract.name
+		editContractForm.data.vat = contract.vat
 		editContractModal.value = true;
 	}
 	function closeEditContractModal() {
 		editContractModal.value = false;
+		editContractForm.errors = {};
 	}
 	function editContract() {
 		axios.put(route('contracts.update', selectedContract.value.id), editContractForm.data)	
@@ -386,6 +398,18 @@
 						<v-text-field v-model="addContractForm.name" label="Название" variant="outlined" persistant-hint
 							:error="addContractForm.invalid('name')" :error-messages="addContractForm.errors.name"
 						></v-text-field>
+
+						<v-select
+							v-model="addContractForm.vat"
+							:items="vats"
+							item-title="label"
+							item-value="value"
+							label="НДС"
+							persistent-hint
+							:error="addContractForm.invalid('vat')"
+							:error-messages="addContractForm.errors.vat"
+							variant="outlined"
+						></v-select>
 					</form>
 				</v-card-text>
 
@@ -415,6 +439,18 @@
 						:error="editContractForm.invalid('name')" :error-messages="editContractForm.errors.name"
 						@keyup.enter.stop="editContract"
 					></v-text-field>
+
+					<v-select
+						v-model="editContractForm.data.vat"
+						:items="vats"
+						item-title="label"
+						item-value="value"
+						label="НДС"
+						persistent-hint
+						:error="editContractForm.invalid('vat')"
+						:error-messages="editContractForm.errors.vat"
+						variant="outlined"
+					></v-select>
 				</v-card-text>
 
 				<template v-slot:actions>

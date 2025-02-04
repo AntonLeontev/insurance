@@ -7,6 +7,7 @@ use App\Enums\PaymentType;
 use App\Enums\ReceiptStatus;
 use App\Enums\ReceiptType;
 use App\Enums\Role;
+use App\Enums\VatAmount;
 use App\Http\Requests\ReceiptSubmitRequest;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -32,6 +33,7 @@ class Receipt extends Model
         'insurer_inn',
         'contract_id',
         'contract_name',
+        'vat',
         'contract_series',
         'contract_number',
         'client_email',
@@ -59,6 +61,7 @@ class Receipt extends Model
         'amount' => AmountCast::class,
         'submited_at' => 'datetime',
         'status' => ReceiptStatus::class,
+        'vat' => VatAmount::class,
     ];
 
     public function scopeAvaliableForUser(Builder $query)

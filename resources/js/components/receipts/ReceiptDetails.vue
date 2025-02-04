@@ -30,6 +30,10 @@
 				<td>{{ props.receipt.contract_name }}</td>
 			</tr>
 			<tr>
+				<td>НДС</td>
+				<td>{{ vats[props.receipt.vat] }}</td>
+			</tr>
+			<tr>
 				<td>Серия договора</td>
 				<td>{{ props.receipt.contract_series }}</td>
 			</tr>
@@ -115,4 +119,13 @@
 		receipt: { required: true, default: {} },
 		width: { required: false },
 	})
+
+	const vats = {
+		'none': 'НДС не облагается',
+		'vat0': '0%',
+		'vat10': '10%',
+		'vat110': '10/110',
+		'vat20': '20%',
+		'vat120': '10/120',
+	};
 </script>

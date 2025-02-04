@@ -40,6 +40,7 @@
 				editForm.data.insurer_name = response.data.insurer_name;
 				editForm.data.insurer_inn = response.data.insurer_inn;
 				editForm.data.contract_id = response.data.contract_id;
+				editForm.data.vat = response.data.vat;
 				editForm.data.contract_name = response.data.contract_name;
 				editForm.data.contract_series = response.data.contract_series;
 				editForm.data.contract_number = response.data.contract_number;

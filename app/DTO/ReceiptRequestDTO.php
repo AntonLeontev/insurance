@@ -4,6 +4,7 @@ namespace App\DTO;
 
 use App\Enums\PaymentType;
 use App\Enums\Sno;
+use App\Enums\VatAmount;
 use App\Models\Agency;
 use App\Models\Receipt;
 use App\Services\Atol\Enums\ApiVersion;
@@ -25,6 +26,7 @@ readonly class ReceiptRequestDTO implements JsonSerializable
         public string $inn,
         public string $paymentAddress,
         public string $contractName,
+        public VatAmount $vat,
         public string $contractSeries,
         public string $contractNumber,
         public float|int $amount,
@@ -49,6 +51,7 @@ readonly class ReceiptRequestDTO implements JsonSerializable
             $agency->inn,
             $agency->payment_address,
             $receipt->contract_name,
+            $receipt->vat,
             $receipt->contract_series,
             $receipt->contract_number,
             $receipt->amount,
@@ -78,7 +81,7 @@ readonly class ReceiptRequestDTO implements JsonSerializable
                     'name' => $this->insurerName,
                     'inn' => $this->insurerInn,
                 ],
-                'vat' => ['type' => 'none'],
+                'vat' => ['type' => $this->vat->value],
             ],
         ];
 

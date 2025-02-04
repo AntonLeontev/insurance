@@ -3,9 +3,11 @@
 namespace App\Http\Requests;
 
 use App\Enums\Role;
+use App\Enums\VatAmount;
 use App\Models\Insurer;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class ContractUpdateRequest extends FormRequest
 {
@@ -25,6 +27,14 @@ class ContractUpdateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'vat' => ['required', Rule::enum(VatAmount::class)],
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'vat' => 'НДС',
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\VatAmount;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,6 +14,11 @@ class Contract extends Model
     protected $fillable = [
         'name',
         'insurer_id',
+        'vat',
+    ];
+
+    protected $casts = [
+        'vat' => VatAmount::class,
     ];
 
     public function insurer(): BelongsTo
