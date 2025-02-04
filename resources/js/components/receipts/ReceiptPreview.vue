@@ -16,6 +16,10 @@ const emit = defineEmits(['submitted'])
 const submitting = ref(false);
 
 function submit() {
+	if (submitting.value) {
+		return;
+	}
+
 	submitting.value = true;
 
 	axios.post(route('receipts.submit'), props.receipt)
