@@ -11,7 +11,7 @@ class AtolException extends \Exception
         $this->message = 'Ошибка Атол: '.$response->json('error.text');
     }
 
-	public function render($request)
+    public function render($request)
     {
         return response()->json([
             'message' => $this->getMessage(),

@@ -22,8 +22,6 @@
 
 	const submitAtolForm = () => atolForm.submit()
 		.then(response => {
-			userStore.setUser(response.data);
-
 			toastsStore.addSuccess("Данные успешно обновлены", 2500);
 			atolForm.errors = {};
 		})
