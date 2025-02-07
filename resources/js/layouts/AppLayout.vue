@@ -9,7 +9,7 @@ const user = useUserStore().user;
 <template>
     <v-app>
         <v-app-bar class="px-4">
-			<span class="text-h4">Insurance</span>
+			<span class="text-h4">Fiscal-Hub</span>
 			<v-spacer></v-spacer>
 			<Profile />
         </v-app-bar>
