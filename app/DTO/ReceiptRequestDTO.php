@@ -76,7 +76,7 @@ readonly class ReceiptRequestDTO implements JsonSerializable
                 'quantity' => 1,
                 'sum' => $this->amount,
                 'payment_method' => 'full_payment',
-                'agent_info' => ['type' => 'commission_agent'],
+                'agent_info' => ['type' => 'another'],
                 'supplier_info' => [
                     'name' => $this->insurerName,
                     'inn' => $this->insurerInn,
