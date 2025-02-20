@@ -270,3 +270,9 @@
 		</v-dialog>
 	</AppLayout>
 </template>
+
+<style>
+	.v-table__wrapper {
+		overflow-y: hidden;
+	}
+</style>

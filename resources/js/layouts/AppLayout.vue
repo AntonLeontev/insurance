@@ -2,21 +2,22 @@
 import Toasts from '@/components/Toasts.vue';
 import Profile from '@/components/Profile.vue';
 import { useUserStore } from '@/stores/user';
+import { ref } from 'vue';
 
 const user = useUserStore().user;
+const drawer = ref(window.innerWidth >= 1280);
 </script>
 
 <template>
     <v-app>
-        <v-app-bar class="px-4">
-			<span class="text-h4">Fiscal-Hub</span>
+        <v-app-bar class="px-2 md:px-4">
+			<v-app-bar-nav-icon variant="text" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+			<span class="text-md md:text-3xl">Fiscal-Hub</span>
 			<v-spacer></v-spacer>
 			<Profile />
         </v-app-bar>
 
-        <v-navigation-drawer
-			mobile-breakpoint="300"
-		>
+        <v-navigation-drawer v-model="drawer" location="left">
             <v-list>
 				<v-list-item>
                     <RouterLink :to="{ name: 'receipts.create' }" class="d-flex ga-1" :class="$route.name === 'receipts.create' ? 'text-primary' : ''">

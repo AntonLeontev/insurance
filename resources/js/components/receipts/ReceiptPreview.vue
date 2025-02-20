@@ -56,15 +56,19 @@ function submit() {
 					<ReceiptDetails :receipt="props.receipt" />
 
 					<div class="flex-col mt-6 d-flex ga-2">
-						<v-btn color="primary" block v-if="props.receipt.payment_type === 'cash'" :loading="submitting" @click="submit">
-							<span class="normal-case">Cформировать чек с</span>
-							<span class="mx-1 font-bold uppercase">Наличной</span>
-							<span class="lowercase">оплатой</span>
+						<v-btn color="primary" block v-if="props.receipt.payment_type === 'cash'" :loading="submitting" @click="submit" class="!h-16 sm:!h-10">
+							<div class="flex-col d-flex sm:flex-row">
+								<span class="normal-case">Cформировать чек с</span>
+								<span class="mx-1 font-bold uppercase">Наличной</span>
+								<span class="lowercase">оплатой</span>
+							</div>
 						</v-btn>
-						<v-btn color="primary" block v-if="props.receipt.payment_type === 'cashless'" :loading="submitting" @click="submit">
-							<span class="normal-case">Cформировать чек с</span>
-							<span class="mx-1 font-bold uppercase">безНаличной</span>
-							<span class="lowercase">оплатой</span>
+						<v-btn color="primary" block v-if="props.receipt.payment_type === 'cashless'" :loading="submitting" @click="submit" class="!h-16 sm:!h-10">
+							<div class="flex-col d-flex sm:flex-row">
+								<span class="normal-case">Cформировать чек с</span>
+								<span class="mx-1 font-bold uppercase">безНаличной</span>
+								<span class="lowercase">оплатой</span>
+							</div>
 						</v-btn>
 						<v-btn color="danger" block @click="$emit('close')">Назад</v-btn>
 					</div>

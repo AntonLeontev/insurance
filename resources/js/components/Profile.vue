@@ -15,11 +15,11 @@ function logout() {
 
 <template>
 	<div class="d-flex">
-		<div class="px-3 d-flex align-center max-w-[300px]" :title="userStore.user.agency?.name">
+		<div class="px-3 d-flex align-center max-w-[150px] md:max-w-[300px]" :title="userStore.user.agency?.name">
 			<span class="font-weight-black text-truncate">{{ userStore.user.agency?.name }}</span>
 		</div>
 		<div>
-			<div class="mx-auto px-3 d-flex max-w-[300px] align-center ga-2 cursor-pointer">
+			<div class="mx-auto px-3 d-flex max-w-[150px] md:max-w-[300px] align-center ga-2 cursor-pointer">
 				<div class="">
 					<v-icon icon="mdi-account-circle" size="x-large" />
 				</div>
