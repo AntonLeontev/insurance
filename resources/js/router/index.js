@@ -17,6 +17,10 @@ router.beforeEach(async (to, from) => {
             return { name: "login" };
         }
     }
+
+	document.title = to.meta.title
+        ? to.meta.title + " | Fiscal Hub"
+        : "Fiscal Hub";
 });
 
 export default router;
