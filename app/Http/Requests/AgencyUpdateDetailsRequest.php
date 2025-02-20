@@ -30,7 +30,8 @@ class AgencyUpdateDetailsRequest extends FormRequest
             'inn' => ['required', 'numeric', new Digits(10, 12)],
             'email' => ['required', 'email', 'max:64'],
             'sno' => ['required', 'string', new Enum(Sno::class)],
-            'payment_address' => ['required', 'string', 'max:256'],
+            'payment_address' => ['required', 'string', 'max:255'],
+            'receipt_email' => ['nullable', 'email', 'max:255'],
         ];
     }
 
@@ -42,6 +43,7 @@ class AgencyUpdateDetailsRequest extends FormRequest
             'email' => 'Email',
             'sno' => 'Система налогооблажения',
             'payment_address' => 'Место расчетов',
+            'receipt_email' => 'Email для отправки всех чеков',
         ];
     }
 }

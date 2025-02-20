@@ -23,6 +23,7 @@
 		email: userStore.user.agency.email,
 		sno: userStore.user.agency.sno,
 		payment_address: userStore.user.agency.payment_address,
+		receipt_email: userStore.user.agency.receipt_email,
 	});
 
 	const submitDetailsForm = () => detailsForm.submit()
@@ -93,6 +94,16 @@
 						:hint="detailsForm.errors.payment_address"
 						persistent-hint
 						:class="detailsForm.invalid('payment_address') ? 'text-danger' : ''"
+					></v-text-field>
+
+					<v-text-field
+						clearable
+						label="Еmail для пробитых чеков"
+						v-model="detailsForm.receipt_email"
+						variant="outlined"
+						:hint="detailsForm.errors.receipt_email"
+						persistent-hint
+						:class="detailsForm.invalid('receipt_email') ? 'text-danger' : ''"
 					></v-text-field>
 
 					<v-btn variant="outlined" type="submit"

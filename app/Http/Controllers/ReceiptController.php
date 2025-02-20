@@ -11,13 +11,18 @@ use App\Http\Requests\ReceiptIndexRequest;
 use App\Http\Requests\ReceiptStoreRequest;
 use App\Http\Requests\ReceiptSubmitRequest;
 use App\Http\Requests\ReceiptUpdateRequest;
+use App\Models\Agency;
 use App\Models\Contract;
 use App\Models\Insurer;
 use App\Models\Receipt;
+use App\Models\User;
+use App\Notifications\ReceiptDone;
+use App\Notifications\ReceiptFail;
 use App\Services\Atol\AtolService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 
 class ReceiptController extends Controller
 {
@@ -161,11 +166,20 @@ class ReceiptController extends Controller
             return response()->json($receipt);
         }
 
+        $user = User::find($receipt->user_id);
+        $agency = Agency::find($user->agency_id);
+
         if ($response->json('status') === 'fail') {
             $receipt->update([
                 'status' => $response->json('status'),
                 'error_text' => $response->json('error.text'),
             ]);
+
+            $user->notify(new ReceiptFail($receipt->id));
+
+            if ($agency->receipt_email !== null) {
+                Notification::route('mail', $agency->receipt_email)->notify(new ReceiptFail($receipt->id));
+            }
         }
 
         if ($response->json('status') === 'done') {
@@ -180,6 +194,12 @@ class ReceiptController extends Controller
                 'fiscal_document_attribute' => $response->json('payload.fiscal_document_attribute'),
                 'ofd_receipt_url' => $response->json('payload.ofd_receipt_url'),
             ]);
+
+            $user->notify(new ReceiptDone($receipt->id));
+
+            if ($agency->receipt_email !== null) {
+                Notification::route('mail', $agency->receipt_email)->notify(new ReceiptDone($receipt->id));
+            }
         }
 
         return response()->json($receipt);

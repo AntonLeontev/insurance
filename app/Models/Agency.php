@@ -19,6 +19,7 @@ class Agency extends Model
         'sno',
         'email',
         'payment_address',
+        'receipt_email',
         'group_code',
         'ffd',
         'atol_login',

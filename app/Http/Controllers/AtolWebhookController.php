@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Agency;
 use App\Models\Receipt;
 use App\Models\User;
 use App\Notifications\ReceiptDone;
 use App\Notifications\ReceiptFail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 
 class AtolWebhookController extends Controller
 {
@@ -15,6 +17,7 @@ class AtolWebhookController extends Controller
         $receipt = Receipt::find($request->json('external_id'));
 
         $user = User::find($receipt->user_id);
+        $agency = Agency::find($user->agency_id);
 
         if ($request->json('status') === 'fail') {
             $receipt->update([
@@ -23,6 +26,10 @@ class AtolWebhookController extends Controller
             ]);
 
             $user->notify(new ReceiptFail($receipt->id));
+
+            if ($agency->receipt_email !== null) {
+                Notification::route('mail', $agency->receipt_email)->notify(new ReceiptFail($receipt->id));
+            }
         }
 
         if ($request->json('status') === 'done') {
@@ -39,6 +46,10 @@ class AtolWebhookController extends Controller
             ]);
 
             $user->notify(new ReceiptDone($receipt->id));
+
+            if ($agency->receipt_email !== null) {
+                Notification::route('mail', $agency->receipt_email)->notify(new ReceiptDone($receipt->id));
+            }
         }
     }
 }
