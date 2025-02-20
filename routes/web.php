@@ -7,14 +7,15 @@ use App\Http\Controllers\ContractController;
 use App\Http\Controllers\InsurerController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\UserController;
-use App\Models\Receipt;
+use App\Models\User;
 use App\Services\Atol\AtolService;
 use Illuminate\Support\Facades\Route;
 
 if (config('app.url') === 'http://127.0.0.1:8000') {
     Route::get('test', function (AtolService $atol) {
-        $r = Receipt::find('9e1a340e-fe98-46ab-80f7-5a977f927b0f');
-        dd($atol->report($r)->json());
+        $user = User::first();
+        $token = $user->createToken('test');
+        dd($token);
     });
 }
 

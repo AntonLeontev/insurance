@@ -102,7 +102,7 @@ class Receipt extends Model
     {
         $query->when(request()->has('filters'), function ($query) {
             foreach (request()->get('filters') as $filter) {
-                $query->where($filter['column'], $filter['value']);
+                $query->where($filter['column'], $filter['operator'] ?? '=', $filter['value']);
             }
         });
     }

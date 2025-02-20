@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\DTO\ReceiptsCollectionDTO;
 use App\Enums\ReceiptStatus;
 use App\Enums\ReceiptType;
 use App\Enums\Role;
 use App\Http\Requests\ReceiptDestroyRequest;
+use App\Http\Requests\ReceiptIndexRequest;
 use App\Http\Requests\ReceiptStoreRequest;
 use App\Http\Requests\ReceiptSubmitRequest;
 use App\Http\Requests\ReceiptUpdateRequest;
@@ -14,7 +16,6 @@ use App\Models\Insurer;
 use App\Models\Receipt;
 use App\Services\Atol\AtolService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
@@ -31,7 +32,7 @@ class ReceiptController extends Controller
         return response()->json($receipt->load('user'));
     }
 
-    public function index(Request $request): JsonResponse
+    public function index(ReceiptIndexRequest $request): JsonResponse|ReceiptsCollectionDTO
     {
         $receipts = Receipt::query()
             ->avaliableForUser()
@@ -39,9 +40,10 @@ class ReceiptController extends Controller
             ->sort()
             ->search()
             ->with(['user' => fn ($q) => $q->select(['email', 'name', 'id'])])
-            ->paginate($request->get('items_per_page'));
+            ->paginate($request->get('items_per_page', 100))
+            ->withQueryString();
 
-        return response()->json($receipts);
+        return new ReceiptsCollectionDTO($receipts);
     }
 
     public function store(ReceiptStoreRequest $request)
