@@ -24,6 +24,10 @@
 		.then(response => {
 			toastsStore.addSuccess("Данные успешно обновлены", 2500);
 			atolForm.errors = {};
+
+			userStore.activeAgency.group_code = atolForm.group_code;
+			userStore.activeAgency.ffd = atolForm.ffd;
+			userStore.activeAgency.atol_login = atolForm.atol_login;
 		})
 		.catch(error => {
 			toastsStore.handleResponseError(error);

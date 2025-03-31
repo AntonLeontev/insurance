@@ -28,7 +28,10 @@
 
 	const submitDetailsForm = () => detailsForm.submit()
 		.then(response => {
-			userStore.setAgency(response.data);
+			let updatedAgency = response.data;
+			updatedAgency.pivot = userStore.activeAgency.pivot;
+
+			userStore.setAgency(updatedAgency);
 
 			toastsStore.addSuccess("Данные успешно обновлены", 2500);
 			detailsForm.errors = {};
