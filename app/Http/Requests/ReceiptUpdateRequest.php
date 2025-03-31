@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\Role;
+use App\Models\AgencyUser;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,14 +14,15 @@ class ReceiptUpdateRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return Auth::check() && Auth::user()->agency_id === $this->get('agency_id');
+        return AgencyUser::where('user_id', Auth::id())->where('agency_id', $this->get('agency_id'))->exists();
     }
 
     public function rules(): array
     {
         $amountRules = ['required', 'numeric', 'decimal:0,2', 'min:0'];
 
-        if (Auth::user()->role === Role::CASHIER) {
+        $agencyUser = AgencyUser::where('user_id', Auth::id())->where('agency_id', $this->get('agency_id'))->first();
+        if ($agencyUser->role === Role::CASHIER) {
             $amountRules[] = 'max:500000';
         }
 

@@ -6,6 +6,7 @@ use App\Enums\Ffd;
 use App\Enums\Sno;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Agency extends Model
@@ -36,11 +37,12 @@ class Agency extends Model
 
     protected $hidden = [
         'atol_token',
+        'atol_password',
     ];
 
-    public function users(): HasMany
+    public function users(): BelongsToMany
     {
-        return $this->hasMany(User::class);
+        return $this->belongsToMany(User::class);
     }
 
     public function insurers(): HasMany

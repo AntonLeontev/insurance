@@ -10,11 +10,19 @@ const router = createRouter({
 router.beforeEach(async (to, from) => {
     const userStore = useUserStore();
 
-    if (to.meta.auth && userStore.user === null) {
+    if (
+        to.meta.auth &&
+        (userStore.user === null || userStore.activeAgency === null) &&
+        to.name !== "receipts.details"
+    ) {
         await userStore.getUser();
 
         if (userStore.user === null) {
             return { name: "login" };
+        }
+
+        if (userStore.activeAgency === null && to.name !== "agencies") {
+            return { name: "agencies" };
         }
     }
 

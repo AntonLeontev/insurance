@@ -13,11 +13,7 @@ class UserController extends Controller
 {
     public function currentUser()
     {
-        if (! auth()->check()) {
-            abort(Response::HTTP_UNAUTHORIZED);
-        }
-
-        return response()->json(auth()->user()->load('agency'));
+        return response()->json(auth()->user()->load('agencies'));
     }
 
     public function updateProfile(ProfileUpdateRequest $request)

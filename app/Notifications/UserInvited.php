@@ -2,17 +2,19 @@
 
 namespace App\Notifications;
 
+use App\Models\Agency;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\URL;
 
 class UserInvited extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public string $temporalPassword) {}
+    public function __construct(public string $temporalPassword, public int $agencyId) {}
 
     /**
      * Get the notification's delivery channels.
@@ -29,11 +31,16 @@ class UserInvited extends Notification implements ShouldQueue
      */
     public function toMail(User $notifiable): MailMessage
     {
-        $notifiable->load('agency');
+        $agency = Agency::find($this->agencyId);
 
         return (new MailMessage)
             ->subject('Приглашение в агентство')
-            ->line("Вы приглашены в агентство {$notifiable->agency->name}.")
-            ->action('Присоединиться', route('password.create', [$notifiable->email, $this->temporalPassword]));
+            ->line("Вы приглашены в агентство {$agency->name}.")
+            ->when(! empty($this->temporalPassword), function (MailMessage $mailMessage) use ($notifiable) {
+                return $mailMessage->action('Присоединиться', route('password.create', [$notifiable->email, $this->temporalPassword]));
+            })
+            ->when(empty($this->temporalPassword), function (MailMessage $mailMessage) {
+                return $mailMessage->action('Присоединиться', URL::to('/'));
+            });
     }
 }

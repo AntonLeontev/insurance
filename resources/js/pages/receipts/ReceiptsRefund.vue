@@ -5,9 +5,11 @@
 	import ReceiptDetails from '@/components/receipts/ReceiptDetails.vue';
 	import { reactive, ref } from 'vue';
 	import { useToastsStore } from '@/stores/toasts';
+	import { useUserStore } from '@/stores/user';
 	import axios from 'axios';
 
 	const toastsStore = useToastsStore();
+	const userStore = useUserStore();
 
 	const receipt = ref(null);
 	const loading = ref(null);
@@ -19,6 +21,7 @@
 		loading.value = true;
 
 		axios.get(route('receipts.index'), {params: {
+			agency_id: userStore.activeAgency.id,
 			filters: [
 				{ column: 'fn_number', value: data.get('fn_number') },
 				{ column: 'fiscal_document_number', value: data.get('fiscal_document_number') },

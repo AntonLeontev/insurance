@@ -25,7 +25,7 @@
 	loadInsurers();
 
 	function loadInsurers() {
-		axios.get(route('insurers.index', {agency_id: userStore.user.agency_id}))
+		axios.get(route('insurers.index', {agency_id: userStore.activeAgency.id}))
 			.then(response => {
 				Object.assign(insurers, response.data);
 			})
@@ -33,7 +33,7 @@
 
 	const addInsurerModal = ref(false);
 	const saveInsurerForm = useForm('post', route('insurers.store'), {
-		agency_id: userStore.user.agency_id,
+		agency_id: userStore.activeAgency.id,
 		name: '',
 		inn: '',
 	});

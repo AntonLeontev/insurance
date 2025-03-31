@@ -31,7 +31,7 @@
 	}
 	
 	function loadInsurers() {
-		axios.get(route('insurers.index', {agency_id: userStore.user.agency_id}))
+		axios.get(route('insurers.index', {agency_id: userStore.activeAgency.id}))
 			.then(response => {
 				Object.assign(insurers, response.data);
 			})
@@ -40,7 +40,7 @@
 	loadInsurers();
 
 	const createForm = useForm("post", route("receipts.store"), {
-		agency_id: userStore.user.agency_id,
+		agency_id: userStore.activeAgency.id,
 		name: null,
 		surname: null,
 		patronymic: null,

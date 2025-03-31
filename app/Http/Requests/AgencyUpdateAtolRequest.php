@@ -4,7 +4,9 @@ namespace App\Http\Requests;
 
 use App\Enums\Ffd;
 use App\Enums\Role;
+use App\Models\AgencyUser;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Enum;
 
 class AgencyUpdateAtolRequest extends FormRequest
@@ -14,7 +16,12 @@ class AgencyUpdateAtolRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->role === Role::ADMIN;
+        $agencyUser = AgencyUser::where('user_id', Auth::id())->where('agency_id', $this->route('agency')->id)->first();
+        if (empty($agencyUser)) {
+            return false;
+        }
+
+        return $agencyUser->role === Role::ADMIN;
     }
 
     /**

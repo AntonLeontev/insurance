@@ -14,9 +14,9 @@
     function onSubmit(event) {
         loading.value = true;
 
-        axios.post('login', new FormData(event.target))
+        axios.post('/login', new FormData(event.target))
 			.then(response => {
-				userStore.user = response.data
+				userStore.setUser(response.data)
 
 				router.push({name: 'home'})
 			})

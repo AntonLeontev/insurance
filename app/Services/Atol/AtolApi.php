@@ -2,40 +2,39 @@
 
 namespace App\Services\Atol;
 
+use App\DTO\ReceiptRequestDTO;
+use App\Services\Atol\Enums\ApiVersion;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 
 class AtolApi
 {
-    public function getToken(?string $login = null, ?string $password = null): Response
+    public function getToken(string $login, string $password, ApiVersion $version): Response
     {
-        $login = $login ?? auth()->user()->agency?->atol_login;
-        $password = $password ?? auth()->user()->agency?->atol_password;
-
-        return Http::atol()
+        return Http::atol($version)
             ->post('getToken', [
                 'login' => $login,
                 'pass' => $password,
             ]);
     }
 
-    public function sell(string $token, string $groupCode, array $data): Response
+    public function sell(string $token, string $groupCode, ReceiptRequestDTO $data): Response
     {
-        return Http::atol()
+        return Http::atol($data->version)
             ->withHeader('Token', $token)
-            ->post($groupCode.'/sell', $data);
+            ->post($groupCode.'/sell', $data->toArray());
     }
 
-    public function sellRefund(string $token, string $groupCode, array $data): Response
+    public function sellRefund(string $token, string $groupCode, ReceiptRequestDTO $data): Response
     {
-        return Http::atol()
+        return Http::atol($data->version)
             ->withHeader('Token', $token)
-            ->post($groupCode.'/sell_refund', $data);
+            ->post($groupCode.'/sell_refund', $data->toArray());
     }
 
-    public function report(string $token, string $groupCode, string $uuid): Response
+    public function report(string $token, string $groupCode, string $uuid, ApiVersion $version): Response
     {
-        return Http::atol()
+        return Http::atol($version)
             ->withHeader('Token', $token)
             ->get($groupCode.'/report/'.$uuid);
     }

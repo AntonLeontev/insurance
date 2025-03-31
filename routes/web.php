@@ -24,14 +24,14 @@ Route::post('login', [AuthController::class, 'login'])
     ->name('login');
 
 Route::controller(UserController::class)->group(function () {
-    Route::get('user', 'currentUser');
+    Route::get('user', 'currentUser')->middleware('auth');
     Route::post('user/update', 'updateProfile')->middleware('precognitive')->name('user.update');
     Route::post('user/password', 'updatePassword')->middleware('precognitive')->name('user.password');
 });
 
 Route::controller(AgencyController::class)->group(function () {
-    Route::post('agency/update-details', 'updateDetails')->middleware('precognitive')->name('agency.update-details');
-    Route::post('agency/update-atol', 'updateAtol')->middleware('precognitive')->name('agency.update-atol');
+    Route::post('agencies/{agency}/update-details', 'updateDetails')->middleware('precognitive')->name('agency.update-details');
+    Route::post('agencies/{agency}/update-atol', 'updateAtol')->middleware('precognitive')->name('agency.update-atol');
     Route::get('agencies/{agency}/users', 'users')->name('agencies.users')->can('viewUsers', 'agency');
     Route::delete('agencies/{agency}/users/{id}', 'deleteUser')->name('agencies.users.destroy')->can('deleteUsers', 'agency');
     Route::post('agencies/{agency}/users/', 'createUser')->name('agencies.users.create')->can('createUsers', 'agency');
@@ -42,7 +42,9 @@ Route::controller(AgencyController::class)->group(function () {
 });
 
 Route::controller(InsurerController::class)->group(function () {
-    Route::get('insurers', 'index')->name('insurers.index');
+    Route::get('insurers', 'index')
+        ->middleware(['needAgency'])
+        ->name('insurers.index');
     Route::post('insurers', 'store')
         ->middleware(['precognitive'])
         ->name('insurers.store');
@@ -66,12 +68,13 @@ Route::controller(ContractController::class)->group(function () {
 
 Route::controller(ReceiptController::class)->group(function () {
     Route::get('receipts', 'index')
-        ->name('receipts.index');
+        ->name('receipts.index')
+        ->middleware(['needAgency']);
     Route::get('receipts/{receipt}', 'show')
         ->whereUuid('receipt')
         ->name('receipts.show');
     Route::post('receipts', 'store')
-        ->middleware(['precognitive'])
+        ->middleware(['precognitive', 'needAgency'])
         ->name('receipts.store');
     Route::put('receipts/{receipt}', 'update')
         ->name('receipts.update');

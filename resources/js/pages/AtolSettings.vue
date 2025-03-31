@@ -13,11 +13,11 @@
 		{title: 'ФФД 1.2', value: 'ffd1.2'},
 	];
 
-	const atolForm = useForm("post", route("agency.update-atol"), {
-		group_code: userStore.user.agency.group_code,
-		ffd: userStore.user.agency.ffd,
-		atol_login: userStore.user.agency.atol_login,
-		atol_password: userStore.user.agency.atol_password,
+	const atolForm = useForm("post", route("agency.update-atol", userStore.activeAgency.id), {
+		group_code: userStore.activeAgency.group_code,
+		ffd: userStore.activeAgency.ffd,
+		atol_login: userStore.activeAgency.atol_login,
+		atol_password: userStore.activeAgency.atol_password,
 	});
 
 	const submitAtolForm = () => atolForm.submit()

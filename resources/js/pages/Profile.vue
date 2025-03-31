@@ -10,8 +10,8 @@ const userStore = useUserStore();
 const toastsStore = useToastsStore();
 
 const profileForm = useForm("post", route("user.update"), {
-  name: userStore.user.name,
-  email: userStore.user.email,
+  name: userStore.user?.name,
+  email: userStore.user?.email,
 });
 
 const submitProfileForm = () => profileForm.submit()

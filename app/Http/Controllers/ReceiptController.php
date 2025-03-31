@@ -12,6 +12,7 @@ use App\Http\Requests\ReceiptStoreRequest;
 use App\Http\Requests\ReceiptSubmitRequest;
 use App\Http\Requests\ReceiptUpdateRequest;
 use App\Models\Agency;
+use App\Models\AgencyUser;
 use App\Models\Contract;
 use App\Models\Insurer;
 use App\Models\Receipt;
@@ -28,10 +29,15 @@ class ReceiptController extends Controller
 {
     public function show(Receipt $receipt): JsonResponse
     {
-        if (Auth::user()->role === Role::CASHIER) {
+        $agencyUser = AgencyUser::where('user_id', Auth::id())->where('agency_id', $receipt->agency_id)->first();
+        if (empty($agencyUser)) {
+            abort(Response::HTTP_FORBIDDEN, 'Доступ запрещен');
+        }
+
+        if ($agencyUser->role === Role::CASHIER) {
             abort_if($receipt->user_id !== Auth::id(), Response::HTTP_FORBIDDEN, 'Доступ запрещен');
         } else {
-            abort_if($receipt->agency_id !== Auth::user()->agency_id, Response::HTTP_FORBIDDEN, 'Доступ запрещен');
+            abort_if(Auth::user()->agencies->pluck('id')->doesntContain($receipt->agency_id), Response::HTTP_FORBIDDEN, 'Доступ запрещен');
         }
 
         return response()->json($receipt->load('user'));
@@ -40,7 +46,7 @@ class ReceiptController extends Controller
     public function index(ReceiptIndexRequest $request): JsonResponse|ReceiptsCollectionDTO
     {
         $receipts = Receipt::query()
-            ->avaliableForUser()
+            ->avaliableForUser($request->get('agency_id'))
             ->filters()
             ->sort()
             ->search()
@@ -120,7 +126,7 @@ class ReceiptController extends Controller
         $receipt->is_draft = false;
         $receipt->payment_type = $request->get('payment_type');
 
-        $response = $atol->sell($receipt);
+        $response = $atol->sell($receipt, Agency::find($request->get('agency_id')));
 
         $receipt->external_id = $response->uuid;
         $receipt->status = $response->status;
@@ -131,8 +137,9 @@ class ReceiptController extends Controller
     public function refund(Receipt $receipt, AtolService $atol)
     {
         abort_if($receipt->status !== ReceiptStatus::DONE, Response::HTTP_BAD_REQUEST, 'Нельзя сделать возврат по неудачному чеку');
-        abort_if(Auth::user()->agency_id !== $receipt->agency_id, Response::HTTP_FORBIDDEN, 'Нет доступа');
-        abort_if(Auth::user()->role === Role::CASHIER, Response::HTTP_FORBIDDEN, 'Нет доступа');
+        $agencyUser = AgencyUser::where('user_id', Auth::id())->where('agency_id', $receipt->agency_id)->first();
+        abort_if(empty($agencyUser), Response::HTTP_FORBIDDEN, 'Доступ запрещен');
+        abort_if($agencyUser->role === Role::CASHIER, Response::HTTP_FORBIDDEN, 'Доступ запрещен');
 
         $data = $receipt->toArray();
         $data['submited_at'] = now()->format('d.m.Y H:i:s');
@@ -143,7 +150,7 @@ class ReceiptController extends Controller
         data_forget($data, 'external_id');
 
         $newReceipt = Receipt::create($data);
-        $response = $atol->sellRefund($newReceipt);
+        $response = $atol->sellRefund($newReceipt, Agency::find($receipt->agency_id));
 
         $newReceipt->external_id = $response->uuid;
         $newReceipt->status = $response->status;
@@ -154,13 +161,14 @@ class ReceiptController extends Controller
     public function getStatus(Receipt $receipt, AtolService $atol): JsonResponse
     {
         abort_if($receipt->external_id === null, Response::HTTP_BAD_REQUEST, 'Чек не отправлен в Атол');
-        abort_if(Auth::user()->agency_id !== $receipt->agency_id, Response::HTTP_FORBIDDEN, 'Доступ запрещен');
+        $agencyUser = AgencyUser::where('user_id', Auth::id())->where('agency_id', $receipt->agency_id)->first();
+        abort_if(empty($agencyUser), Response::HTTP_FORBIDDEN, 'Доступ запрещен');
 
         if ($receipt->status === ReceiptStatus::DONE || $receipt->status === ReceiptStatus::FAIL) {
             return response()->json($receipt);
         }
 
-        $response = $atol->report($receipt);
+        $response = $atol->report($receipt, Agency::find($receipt->agency_id));
 
         if ($response->json('status') === 'wait') {
             return response()->json($receipt);

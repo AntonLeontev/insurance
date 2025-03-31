@@ -52,6 +52,7 @@
 			route('receipts.index'), 
 			{ params: { 
 				page, 
+				agency_id: userStore.activeAgency.id,
 				items_per_page: itemsPerPage, 
 				sort: sortBy,
 				search: search,

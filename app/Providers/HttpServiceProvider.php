@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Enums\Ffd;
+use App\Services\Atol\Enums\ApiVersion;
 use App\Services\Atol\Exceptions\AtolException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
@@ -15,14 +15,8 @@ class HttpServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        Http::macro('atol', function () {
-            if (empty(auth()->user()->agency->ffd)) {
-                abort(500, 'Не указан ФФД в настройках Атол');
-            }
-
-            $version = auth()->user()->agency->ffd === Ffd::FFD1_05 ? 'v4' : 'v5';
-
-            return Http::baseUrl(config('services.atol.base_url').$version)
+        Http::macro('atol', function (ApiVersion $version) {
+            return Http::baseUrl(config('services.atol.base_url').$version->value)
                 ->asJson()
                 ->throw(function (Response $response) {
                     throw new AtolException($response);

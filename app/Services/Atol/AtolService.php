@@ -6,52 +6,45 @@ use App\DTO\ReceiptRequestDTO;
 use App\Models\Agency;
 use App\Models\Receipt;
 use Illuminate\Http\Client\Response;
-use Illuminate\Support\Facades\Auth;
 
 class AtolService
 {
     public function __construct(public AtolApi $api) {}
 
-    public function getToken(?string $login = null, ?string $password = null): string
+    public function getToken(string $login, string $password, Agency $agency): string
     {
-        $response = $this->api->getToken($login, $password);
+        $response = $this->api->getToken($login, $password, $agency->ffd->ApiVersion());
 
         return $response->json('token');
     }
 
-    public function sell(Receipt $receipt)
+    public function sell(Receipt $receipt, Agency $agency)
     {
-        $agency = Auth::user()->agency;
-
         $token = $this->loadToken($agency);
 
         $dto = ReceiptRequestDTO::fromReceipt($receipt, $agency, $agency->ffd->ApiVersion());
 
-        $response = $this->api->sell($token, $agency->group_code, $dto->toArray());
+        $response = $this->api->sell($token, $agency->group_code, $dto);
 
         return $response->object();
     }
 
-    public function sellRefund(Receipt $receipt)
+    public function sellRefund(Receipt $receipt, Agency $agency)
     {
-        $agency = Auth::user()->agency;
-
         $token = $this->loadToken($agency);
 
         $dto = ReceiptRequestDTO::fromReceipt($receipt, $agency, $agency->ffd->ApiVersion());
 
-        $response = $this->api->sellRefund($token, $agency->group_code, $dto->toArray());
+        $response = $this->api->sellRefund($token, $agency->group_code, $dto);
 
         return $response->object();
     }
 
-    public function report(Receipt $receipt): Response
+    public function report(Receipt $receipt, Agency $agency): Response
     {
-        $agency = Auth::user()->agency;
-
         $token = $this->loadToken($agency);
 
-        return $this->api->report($token, $agency->group_code, $receipt->external_id);
+        return $this->api->report($token, $agency->group_code, $receipt->external_id, $agency->ffd->ApiVersion());
     }
 
     private function loadToken(Agency $agency): string
@@ -59,7 +52,7 @@ class AtolService
         if ($agency->atol_token_expires->isFuture()) {
             $token = $agency->atol_token;
         } else {
-            $token = $this->getToken();
+            $token = $this->getToken($agency->atol_login, $agency->atol_password, $agency);
 
             $agency->update([
                 'atol_token' => $token,

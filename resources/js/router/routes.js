@@ -73,6 +73,12 @@ export default [
         name: "receipts.refund",
         meta: { auth: true, title: "Возврат" },
     },
+    {
+        path: "/agencies",
+        component: () => import("@/pages/Agencies.vue"),
+        name: "agencies",
+        meta: { auth: true, title: "Выбор агентства" },
+    },
     { path: "/login", component: Login, name: "login" },
     {
         path: "/forgot-password",

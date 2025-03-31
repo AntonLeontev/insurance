@@ -43,7 +43,7 @@
 		loading.value = true;
 
 		axios.get(
-			route('agencies.users', userStore.user.agency_id), 
+			route('agencies.users', userStore.activeAgency.id), 
 			{ params: { 
 				page, 
 				items_per_page: itemsPerPage, 
@@ -82,7 +82,7 @@
 
 	function deleteUser() {
 		axios.delete(route('agencies.users.destroy', {
-			agency: userStore.user.agency_id,
+			agency: userStore.activeAgency.id,
 			id: deletingItem.value.id
 		}))
 			.then(response => {
@@ -99,7 +99,7 @@
 		createForm.errors = {}
 	}
 
-	const createForm = useForm("post", route("agencies.users.create", userStore.user.agency_id), {
+	const createForm = useForm("post", route("agencies.users.create", userStore.activeAgency.id), {
 		email: '',
 		name: '',
 		role: null,
@@ -116,7 +116,7 @@
 
 
 	function sendInvite(user) {
-		axios.post(route('agencies.users.invite', [userStore.user.agency_id, user.id]))
+		axios.post(route('agencies.users.invite', [userStore.activeAgency.id, user.id]))
 			.then(response => {
 				toastsStore.addSuccess('Приглашение отправлено', 2500)
 			})

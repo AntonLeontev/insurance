@@ -17,13 +17,13 @@
 		{title: 'Патент', props: { subtitle: '' }, value: 'patent'},
 	];
 
-	const detailsForm = useForm("post", route("agency.update-details"), {
-		name: userStore.user.agency.name,
-		inn: userStore.user.agency.inn,
-		email: userStore.user.agency.email,
-		sno: userStore.user.agency.sno,
-		payment_address: userStore.user.agency.payment_address,
-		receipt_email: userStore.user.agency.receipt_email,
+	const detailsForm = useForm("post", route("agency.update-details", userStore.activeAgency.id), {
+		name: userStore.activeAgency.name,
+		inn: userStore.activeAgency.inn,
+		email: userStore.activeAgency.email,
+		sno: userStore.activeAgency.sno,
+		payment_address: userStore.activeAgency.payment_address,
+		receipt_email: userStore.activeAgency.receipt_email,
 	});
 
 	const submitDetailsForm = () => detailsForm.submit()

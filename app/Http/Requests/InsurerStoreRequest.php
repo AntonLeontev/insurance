@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\Role;
+use App\Models\AgencyUser;
 use App\Rules\Digits;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -11,7 +12,9 @@ class InsurerStoreRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Auth::user()->role === Role::ADMIN && Auth::user()->agency_id === $this->input('agency_id');
+        $agencyUser = AgencyUser::where('user_id', Auth::id())->where('agency_id', $this->input('agency_id'))->first();
+
+        return $agencyUser !== null && $agencyUser->role === Role::ADMIN;
     }
 
     public function rules(): array

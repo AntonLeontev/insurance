@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\Role;
+use App\Models\AgencyUser;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,7 +14,9 @@ class InsurerDestroyRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return Auth::user()->role === Role::ADMIN
-            && Auth::user()->agency_id === $this->route('insurer')->agency_id;
+        $insurerAgencyId = $this->route('insurer')->agency_id;
+        $agencyUser = AgencyUser::where('user_id', Auth::id())->where('agency_id', $insurerAgencyId)->first();
+
+        return $agencyUser !== null && $agencyUser->role === Role::ADMIN;
     }
 }

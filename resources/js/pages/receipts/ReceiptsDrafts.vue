@@ -47,6 +47,7 @@
 			route('receipts.index'), 
 			{ params: { 
 				page, 
+				agency_id: userStore.activeAgency.id,
 				items_per_page: itemsPerPage, 
 				sort: sortBy,
 				search: search,
@@ -100,7 +101,7 @@
 	}
 	
 	function loadInsurers() {
-		axios.get(route('insurers.index', {agency_id: userStore.user.agency_id}))
+		axios.get(route('insurers.index', {agency_id: userStore.activeAgency.id}))
 			.then(response => {
 				Object.assign(insurers, response.data);
 			})

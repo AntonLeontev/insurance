@@ -6,7 +6,7 @@ namespace App\Models;
 
 use App\Enums\Role;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -52,16 +52,10 @@ class User extends Authenticatable
         ];
     }
 
-    public function jsonSerialize(): array
+    public function agencies(): BelongsToMany
     {
-        $model = $this->toArray();
-        $model['role_name'] = $this->role->name();
-
-        return $model;
-    }
-
-    public function agency(): BelongsTo
-    {
-        return $this->belongsTo(Agency::class);
+        return $this->belongsToMany(Agency::class)
+            ->using(AgencyUser::class)
+            ->withPivot('role');
     }
 }

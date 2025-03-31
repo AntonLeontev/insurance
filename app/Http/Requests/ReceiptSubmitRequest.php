@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\PaymentType;
+use App\Models\AgencyUser;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -14,8 +15,7 @@ class ReceiptSubmitRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return Auth::check()
-            && Auth::user()->agency_id === $this->get('agency_id');
+        return AgencyUser::where('user_id', Auth::id())->where('agency_id', $this->get('agency_id'))->exists();
     }
 
     /**

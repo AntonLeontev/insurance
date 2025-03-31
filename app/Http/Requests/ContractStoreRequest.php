@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\Role;
 use App\Enums\VatAmount;
+use App\Models\AgencyUser;
 use App\Models\Insurer;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -16,8 +17,10 @@ class ContractStoreRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return Auth::user()->role === Role::ADMIN
-            && Auth::user()->agency_id === Insurer::find($this->input('insurer_id'))->agency_id;
+        $insurerAgencyId = Insurer::find($this->get('insurer_id'))->agency_id;
+        $agencyUser = AgencyUser::where('user_id', Auth::id())->where('agency_id', $insurerAgencyId)->first();
+
+        return $agencyUser !== null && $agencyUser->role === Role::ADMIN;
     }
 
     /**

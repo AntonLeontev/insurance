@@ -64,12 +64,15 @@ class Receipt extends Model
         'vat' => VatAmount::class,
     ];
 
-    public function scopeAvaliableForUser(Builder $query)
+    public function scopeAvaliableForUser(Builder $query, int $agencyId)
     {
-        if (Auth::user()->role === Role::CASHIER) {
-            $query->where('user_id', Auth::id());
+        $role = AgencyUser::where('user_id', Auth::id())->where('agency_id', $agencyId)->firstOrFail()->role;
+
+        if ($role === Role::CASHIER) {
+            $query->where('user_id', Auth::id())
+                ->where('agency_id', $agencyId);
         } else {
-            $query->where('agency_id', Auth::user()->agency_id);
+            $query->where('agency_id', $agencyId);
         }
     }
 
