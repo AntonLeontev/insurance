@@ -29,10 +29,10 @@ class CreateUser extends Command
             'email' => $email,
             'name' => $name,
             'password' => Hash::make($password),
-            'role' => 'admin',
             'email_verified_at' => now(),
-            'agency_id' => $agencyId,
         ]);
+
+        $user->agencies()->attach($agencyId, ['role' => 'admin']);
 
         if ($user) {
             $this->info("User {$user->name} created");
