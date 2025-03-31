@@ -29,7 +29,7 @@ export const useUserStore = defineStore("user", () => {
             let agency = JSON.parse(localStorage.getItem("activeAgency"));
 
             if (user.value.agencies.find((a) => a.id === agency.id)) {
-                activeAgency.value = a;
+                activeAgency.value = agency;
             }
         }
     }

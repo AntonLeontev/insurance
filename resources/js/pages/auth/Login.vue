@@ -21,6 +21,7 @@
 				router.push({name: 'home'})
 			})
 			.catch(err => {
+				console.log(err)
 				toastsStore.addError(err.response?.data?.message ?? err.message)
 			})
 			.finally(() => {
