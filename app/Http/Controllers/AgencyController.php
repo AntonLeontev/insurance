@@ -49,7 +49,7 @@ class AgencyController extends Controller
 
         $usersIds = AgencyUser::where('agency_id', $agency->id)->pluck('user_id')->toArray();
 
-        $users = User::select(['name', 'email', 'role', 'id', 'email_verified_at'])
+        $users = User::select(['name', 'email', 'id', 'email_verified_at'])
             ->whereIn('id', $usersIds)
             ->with('agencies')
             ->when($request->has('sort'), function ($query) use ($request) {
