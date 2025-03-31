@@ -182,7 +182,7 @@
 							class="cursor-pointer me-2"
 							color="danger"
 							v-tooltip:bottom="'Пробить возврат'"
-							v-if="item.status === 'done' && userStore.user.role !== 'cashier' && item.receipt_type === 'sell'"
+							v-if="item.status === 'done' && userStore.activeAgency?.pivot?.role !== 'cashier' && item.receipt_type === 'sell'"
 							@click="openRefundModal(item)"
 						></v-icon>
 						<v-icon
