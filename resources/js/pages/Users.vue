@@ -189,7 +189,7 @@
 							color="error"
 							title="Удалить пользователя"
 							@click="openDeleteModal(item, $event)"
-							v-if="userStore.user.id !== item.id"
+							v-if="userStore.user?.id !== item.id"
 						>
 							
 						</v-btn>

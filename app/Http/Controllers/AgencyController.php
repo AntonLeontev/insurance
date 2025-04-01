@@ -13,6 +13,7 @@ use App\Services\Atol\AtolService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Arr;
 
 class AgencyController extends Controller
 {
@@ -96,7 +97,7 @@ class AgencyController extends Controller
             $password = str()->random(16);
             $user = User::create([
                 'password' => $password,
-                ...$request->validated(),
+                ...Arr::except($request->validated(), 'role'),
             ]);
         }
 

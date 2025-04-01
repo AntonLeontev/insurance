@@ -25,11 +25,13 @@ export const useUserStore = defineStore("user", () => {
             return;
         }
 
-        if (localStorage.getItem("activeAgency")) {
-            let agency = JSON.parse(localStorage.getItem("activeAgency"));
+        if (localStorage.getItem("activeAgencyId")) {
+            let agencyId = localStorage.getItem("activeAgencyId");
 
-            if (user.value.agencies.find((a) => a.id === agency.id)) {
-                activeAgency.value = agency;
+            if (user.value.agencies.find((a) => a.id == agencyId)) {
+                activeAgency.value = user.value.agencies.find(
+                    (a) => a.id == agencyId
+                );
             }
         }
     }
@@ -37,7 +39,7 @@ export const useUserStore = defineStore("user", () => {
     function setAgency(agency) {
         activeAgency.value = agency;
 
-        localStorage.setItem("activeAgency", JSON.stringify(agency));
+        localStorage.setItem("activeAgencyId", agency.id);
     }
 
     function logout() {
