@@ -20,7 +20,7 @@ class UserController extends Controller
     {
         auth()->user()->update($request->validated());
 
-        return response()->json(auth()->user());
+        return response()->json(auth()->user()->load('agencies'));
     }
 
     public function updatePassword(PasswordUpdateRequest $request)
