@@ -17,7 +17,7 @@ class AtolWebhookController extends Controller
         $receipt = Receipt::find($request->json('external_id'));
 
         $user = User::find($receipt->user_id);
-        $agency = Agency::find($user->agency_id);
+        $agency = Agency::find($receipt->agency_id);
 
         if ($request->json('status') === 'fail') {
             $receipt->update([

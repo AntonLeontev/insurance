@@ -175,7 +175,7 @@ class ReceiptController extends Controller
         }
 
         $user = User::find($receipt->user_id);
-        $agency = Agency::find($user->agency_id);
+        $agency = Agency::find($receipt->agency_id);
 
         if ($response->json('status') === 'fail') {
             $receipt->update([
