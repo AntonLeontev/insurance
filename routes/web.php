@@ -7,15 +7,21 @@ use App\Http\Controllers\ContractController;
 use App\Http\Controllers\InsurerController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\UserController;
-use App\Models\User;
 use App\Services\Atol\AtolService;
+use chillerlan\QRCode\QRCode;
+use chillerlan\QRCode\QROptions;
 use Illuminate\Support\Facades\Route;
 
 if (config('app.url') === 'http://127.0.0.1:8000') {
     Route::get('test', function (AtolService $atol) {
-        $user = User::first();
-        $token = $user->createToken('test');
-        dd($token);
+        $data = 't=20250409T1351&s=6608.45&fn=7380440801037213&i=133&fp=2728305220&n=1';
+
+        $options = new QROptions;
+        $options->outputBase64 = false; // output raw image instead of base64 data URI
+
+        $qrcode = base64_encode((new QRCode($options))->render($data));
+
+        return "<img src='data:image/svg+xml;base64,{$qrcode}' width='400' />";
     });
 }
 
@@ -86,6 +92,8 @@ Route::controller(ReceiptController::class)->group(function () {
         ->name('receipts.get-status');
     Route::post('receipts/{receipt}/refund', 'refund')
         ->name('receipts.refund');
+    Route::get('receipts/{receipt}/pdf', 'pdf')
+        ->name('receipts.pdf');
 });
 
 Route::post('webhooks/atol', AtolWebhookController::class)->name('webhooks.atol');

@@ -6,6 +6,8 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "barryvdh/laravel-dompdf": "^3.1",
+        "chillerlan/php-qrcode": "^5.0",
         "grkamil/laravel-telegram-logging": "^1.11",
         "laravel/fortify": "^1.24",
         "laravel/framework": "^11.9",

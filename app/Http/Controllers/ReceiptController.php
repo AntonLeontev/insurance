@@ -20,8 +20,13 @@ use App\Models\User;
 use App\Notifications\ReceiptDone;
 use App\Notifications\ReceiptFail;
 use App\Services\Atol\AtolService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use chillerlan\QRCode\QRCode;
+use chillerlan\QRCode\QROptions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 
@@ -64,8 +69,11 @@ class ReceiptController extends Controller
 
         abort_if($contract->insurer_id !== $insurer->id, Response::HTTP_BAD_REQUEST, 'Контракт не принадлежит выбранному страховщику');
 
+        $agency = Agency::find($request->get('agency_id'));
+
         Receipt::create([
-            ...$request->validated(),
+            ...Arr::except($request->validated(), ['agent_email']),
+            'agent_email' => $agency->email,
             'user_id' => Auth::id(),
             'insurer_name' => $insurer->name,
             'insurer_inn' => $insurer->inn,
@@ -211,5 +219,24 @@ class ReceiptController extends Controller
         }
 
         return response()->json($receipt);
+    }
+
+    public function pdf(Receipt $receipt)
+    {
+        $agency = Agency::find($receipt->agency_id);
+
+        $time = Carbon::parse($receipt->receipt_datetime)->format('Ymd\THi');
+        $data = sprintf('t=%s&s=%s&fn=%s&i=%s&fp=%s&n=%s', $time, $receipt->amount, $receipt->fn_number, $receipt->fiscal_document_number, $receipt->fiscal_document_attribute, $receipt->receipt_type->value === 'sell' ? 1 : 2);
+
+        $options = new QROptions;
+        $options->outputBase64 = false;
+
+        $qrcode = base64_encode((new QRCode($options))->render($data));
+
+        $pdf = Pdf::loadView('pdf.receipt', compact('receipt', 'qrcode', 'agency'))
+            ->setPaper([0, 0, 360, 950]);
+
+        // return view('pdf.receipt', compact('receipt', 'qrcode', 'agency'));
+        return $pdf->download('receipt.pdf');
     }
 }

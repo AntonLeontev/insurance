@@ -112,6 +112,8 @@ class Receipt extends Model
 
     public static function fromSubmitRequest(ReceiptSubmitRequest $request): static
     {
+        $agency = Agency::find($request->validated('agency_id'));
+
         $receipt = new static;
 
         $receipt->name = $request->validated('name');
@@ -125,7 +127,7 @@ class Receipt extends Model
         $receipt->contract_series = $request->validated('contract_series');
         $receipt->contract_number = $request->validated('contract_number');
         $receipt->client_email = $request->validated('client_email');
-        $receipt->agent_email = $request->validated('agent_email');
+        $receipt->agent_email = $agency->email;
         $receipt->amount = $request->validated('amount');
         $receipt->payment_type = $request->validated('payment_type');
         $receipt->save();

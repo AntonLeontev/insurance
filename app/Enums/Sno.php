@@ -10,4 +10,16 @@ enum Sno: string
     case ENVD = 'envd';
     case ESN = 'esn';
     case PATENT = 'patent';
+
+    public function toString(): string
+    {
+        return match ($this) {
+            self::OSN => 'ОСН',
+            self::USN_INCOME => 'УСН Доход',
+            self::USN_INCOME_OUTCOME => 'УСН Доход - Расход',
+            self::ENVD => 'ЕНВД',
+            self::ESN => 'ЕСН',
+            self::PATENT => 'Патент',
+        };
+    }
 }

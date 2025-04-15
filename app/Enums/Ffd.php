@@ -16,4 +16,12 @@ enum Ffd: string
             self::FFD1_2 => ApiVersion::V5,
         };
     }
+
+    public function toString(): string
+    {
+        return match ($this) {
+            self::FFD1_05 => '1.05',
+            self::FFD1_2 => '1.2',
+        };
+    }
 }

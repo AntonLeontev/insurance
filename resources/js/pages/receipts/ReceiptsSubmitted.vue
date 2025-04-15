@@ -238,6 +238,7 @@
 				</v-card-text>
 
 				<template v-slot:actions>
+					<v-btn :href="route('receipts.pdf', selectedReceipt.id)">Скачать PDF</v-btn>
 					<v-btn @click="detailsModal = false">Отмена</v-btn>
 				</template>
 			</v-card>
