@@ -94,6 +94,8 @@ Route::controller(ReceiptController::class)->group(function () {
         ->name('receipts.refund');
     Route::get('receipts/{receipt}/pdf', 'pdf')
         ->name('receipts.pdf');
+    Route::get('receipts/{receipt}/details', 'pdf')
+        ->name('receipts.details');
 });
 
 Route::post('webhooks/atol', AtolWebhookController::class)->name('webhooks.atol');
