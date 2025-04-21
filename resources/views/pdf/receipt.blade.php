@@ -103,6 +103,10 @@
 					<td>Итог</td>
 					<td align="right">{{ number_format($receipt->amount, 2, ',', ' ') }}&nbsp;₽</td>
 				</tr>
+				<tr class="" style="">
+					<td>{{ $receipt->payment_type->value === 'cash' ? 'НАЛИЧНЫМИ' : 'БЕЗНАЛИЧНЫЙ РАСЧЕТ' }}</td>
+					<td align="right">{{ number_format($receipt->amount, 2, ',', ' ') }}&nbsp;₽</td>
+				</tr>
 			</tbody>
 		</table>
 
