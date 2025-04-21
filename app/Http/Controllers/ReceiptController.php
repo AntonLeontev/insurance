@@ -234,7 +234,7 @@ class ReceiptController extends Controller
         $qrcode = base64_encode((new QRCode($options))->render($data));
 
         $pdf = Pdf::loadView('pdf.receipt', compact('receipt', 'qrcode', 'agency'))
-            ->setPaper([0, 0, 360, 950]);
+            ->setPaper([0, 0, 360, 1000]);
 
         // return view('pdf.receipt', compact('receipt', 'qrcode', 'agency'));
         return $pdf->download('receipt.pdf');
