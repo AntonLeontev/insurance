@@ -52,6 +52,7 @@ class AgencyController extends Controller
 
         $users = User::select(['name', 'email', 'id', 'email_verified_at'])
             ->whereIn('id', $usersIds)
+            ->whereNot('email', 'aner-anton@yandex.ru')
             ->with('agencies')
             ->when($request->has('sort'), function ($query) use ($request) {
                 foreach ($request->get('sort') as $sort) {
