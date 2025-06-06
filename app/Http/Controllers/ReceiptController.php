@@ -152,6 +152,7 @@ class ReceiptController extends Controller
         $data = $receipt->toArray();
         $data['submited_at'] = now()->format('d.m.Y H:i:s');
         $data['receipt_type'] = ReceiptType::SELL_REFUND->value;
+        $data['parent_id'] = $receipt->id;
         data_forget($data, 'id');
         data_forget($data, 'created_at');
         data_forget($data, 'updated_at');

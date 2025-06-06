@@ -52,6 +52,7 @@ class Receipt extends Model
         'fiscal_document_attribute',
         'ofd_receipt_url',
         'submited_at',
+        'parent_id',
     ];
 
     protected $casts = [
