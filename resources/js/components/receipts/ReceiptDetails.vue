@@ -110,6 +110,10 @@
 				<td>Ссылка на чек в ОФД</td>
 				<td><a :href="props.receipt.ofd_receipt_url" target="_blank" class="underline">Перейти</a></td>
 			</tr>
+			<tr v-if="props.receipt.parent_id">
+				<td>Чек продажи</td>
+				<td><a :href="`/receipts/${props.receipt.parent_id}/details`" target="_blank" class="underline">Перейти</a></td>
+			</tr>
 		</tbody>
   	</v-table>
 </template>
