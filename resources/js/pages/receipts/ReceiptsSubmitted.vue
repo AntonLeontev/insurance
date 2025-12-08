@@ -4,7 +4,7 @@
 	import CrudPage from '@/components/CrudPage.vue';
 	import DataTablePagination from '@/components/DataTablePagination.vue';
 	import ReceiptDetails from '@/components/receipts/ReceiptDetails.vue';
-	import { reactive, ref, watch } from 'vue';
+	import { ref, watch } from 'vue';
 	import { useUserStore } from '@/stores/user';
 	import { useToastsStore } from '@/stores/toasts';
 	import axios from 'axios';
@@ -25,7 +25,7 @@
 		{ title: 'ФПД', key: 'fiscal_document_attribute', align: 'start' },
 		{ title: 'Действия', key: 'actions', align: 'end', sortable: false }
     ];
-	const receipts = reactive([]);
+	const receipts = ref([]);
 	const loading = ref(false);
 
 	const itemsPerPage = ref(localStorage.getItem('receipts-drafts:itemsPerPage') || 10);
@@ -33,34 +33,39 @@
 	const page = ref(1);
 	const sortBy = ref(null);
 	const search = ref(null);
+	let searchTimeout = null;
 
 	watch(itemsPerPage, () => {
 		localStorage.setItem('receipts-drafts:itemsPerPage', itemsPerPage.value);
-		loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value, search: search.value });
-	});
-	watch(page, () => {
-		loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value, search: search.value });
 	});
 	watch(search, () => {
-		loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value, search: search.value });
+		clearTimeout(searchTimeout);
+		searchTimeout = setTimeout(() => {
+			if (page.value !== 1) {
+				page.value = 1; // Сбрасываем страницу при поиске, что вызовет @update:options
+			} else {
+				// Если уже на первой странице, вызываем загрузку вручную
+				loadItems({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value });
+			}
+		}, 350);
 	});
 
-	function loadItems({ page, itemsPerPage, sortBy, search }) {
+	function loadItems({ page: pageNum, itemsPerPage: perPage, sortBy: sort }) {
 		loading.value = true;
 
 		axios.get(
 			route('receipts.index'), 
 			{ params: { 
-				page, 
+				page: pageNum, 
 				agency_id: userStore.activeAgency.id,
-				items_per_page: itemsPerPage, 
-				sort: sortBy,
-				search: search,
+				items_per_page: perPage, 
+				sort: sort,
+				search: search.value,
 				filters: [{column: 'is_draft', value: 0}],
 			} }
 		)
 			.then(response => {
-				receipts.splice(0, receipts.length, ...response.data.data);
+				receipts.value = response.data.data;
 				totalItems.value = response.data.total;
 			})
 			.finally(() => {
@@ -83,7 +88,7 @@
 	}
 	function makeRefund() {
 		axios.post(route('receipts.refund', selectedReceipt.value?.id))
-			.then(response => loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value, search: search.value }))
+			.then(response => loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value }))
 			.catch(error => toastsStore.handleResponseError(error))
 			.finally(() => refundModal.value = false)
 	}
@@ -98,8 +103,8 @@
 		
 		axios.get(route('receipts.get-status', id))
 			.then(response => {
-				let index = receipts.findIndex(receipt => receipt.id === id);
-				receipts[index] = response.data;
+				let index = receipts.value.findIndex(receipt => receipt.id === id);
+				receipts.value[index] = response.data;
 
 				if (selectedReceipt.value?.id === id) {
 					selectedReceipt.value = response.data;
@@ -132,9 +137,9 @@
 					:items="receipts"
 					:items-length="totalItems"
 					:loading="loading"
-					item-value="name"
 					@update:options="loadItems"
 					density="comfortable"
+					item-key="id"
 				>
 					<template v-slot:item.surname="{ item }">
 						<span class="">
