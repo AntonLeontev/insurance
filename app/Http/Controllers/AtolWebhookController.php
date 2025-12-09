@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ReceiptStatus;
 use App\Models\Agency;
 use App\Models\Receipt;
 use App\Models\User;
@@ -20,19 +21,25 @@ class AtolWebhookController extends Controller
         $agency = Agency::find($receipt->agency_id);
 
         if ($request->json('status') === 'fail') {
+            $needNotification = $receipt->status !== ReceiptStatus::FAIL;
+
             $receipt->update([
                 'status' => $request->json('status'),
                 'error_text' => $request->json('error.text'),
             ]);
 
-            $user->notify(new ReceiptFail($receipt->id));
+            if ($needNotification) {
+                $user->notify(new ReceiptFail($receipt->id));
 
-            if ($agency->receipt_email !== null) {
-                Notification::route('mail', $agency->receipt_email)->notify(new ReceiptFail($receipt->id));
+                if ($agency->receipt_email !== null) {
+                    Notification::route('mail', $agency->receipt_email)->notify(new ReceiptFail($receipt->id));
+                }
             }
         }
 
         if ($request->json('status') === 'done') {
+            $needNotification = $receipt->status !== ReceiptStatus::DONE;
+
             $receipt->update([
                 'status' => 'done',
                 'fiscal_receipt_number' => $request->json('payload.fiscal_receipt_number'),
@@ -45,10 +52,12 @@ class AtolWebhookController extends Controller
                 'ofd_receipt_url' => $request->json('payload.ofd_receipt_url'),
             ]);
 
-            $user->notify(new ReceiptDone($receipt->id));
+            if ($needNotification) {
+                $user->notify(new ReceiptDone($receipt->id));
 
-            if ($agency->receipt_email !== null) {
-                Notification::route('mail', $agency->receipt_email)->notify(new ReceiptDone($receipt->id));
+                if ($agency->receipt_email !== null) {
+                    Notification::route('mail', $agency->receipt_email)->notify(new ReceiptDone($receipt->id));
+                }
             }
         }
     }
