@@ -1,7 +1,7 @@
 <script setup>
 import ReceiptDetails from '@/components/receipts/ReceiptDetails.vue';
 import axios from 'axios';
-import { defineProps, ref, defineEmits } from 'vue';
+import { ref, defineEmits } from 'vue';
 import { useToastsStore } from '@/stores/toasts';
 
 const toastsStore = useToastsStore();
