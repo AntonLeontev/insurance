@@ -32,6 +32,12 @@ export default [
         meta: { auth: true, title: "Настройки Атол" },
     },
     {
+        path: "/tbank-settings",
+        component: () => import("@/pages/TbankSettings.vue"),
+        name: "tbank-settings",
+        meta: { auth: true, title: "Настройки Тбанка" },
+    },
+    {
         path: "/products",
         component: () => import("@/pages/Products.vue"),
         name: "products",

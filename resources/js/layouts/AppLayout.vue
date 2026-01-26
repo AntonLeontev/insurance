@@ -69,6 +69,12 @@ const drawer = ref(window.innerWidth >= 1280);
 					</RouterLink>
 				</v-list-item>
 				<v-list-item v-if="userStore.activeAgency?.pivot?.role === 'admin'">
+					<RouterLink :to="{ name: 'tbank-settings' }" class="d-flex ga-1" :class="$route.name === 'tbank-settings' ? 'text-primary' : ''">
+						<v-icon icon="mdi-bank"></v-icon>
+						Настройки Тбанка
+					</RouterLink>
+				</v-list-item>
+				<v-list-item v-if="userStore.activeAgency?.pivot?.role === 'admin'">
 					<RouterLink :to="{ name: 'users' }" class="d-flex ga-1" :class="$route.name === 'users' ? 'text-primary' : ''">
 						<v-icon icon="mdi-account-group"></v-icon>
 						Пользователи

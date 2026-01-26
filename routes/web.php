@@ -38,6 +38,8 @@ Route::controller(UserController::class)->group(function () {
 Route::controller(AgencyController::class)->group(function () {
     Route::post('agencies/{agency}/update-details', 'updateDetails')->middleware('precognitive')->name('agency.update-details');
     Route::post('agencies/{agency}/update-atol', 'updateAtol')->middleware('precognitive')->name('agency.update-atol');
+    Route::get('agencies/{agency}/tbank', 'getTbank')->name('agency.get-tbank');
+    Route::post('agencies/{agency}/update-tbank', 'updateTbank')->middleware('precognitive')->name('agency.update-tbank');
     Route::get('agencies/{agency}/users', 'users')->name('agencies.users')->can('viewUsers', 'agency');
     Route::delete('agencies/{agency}/users/{id}', 'deleteUser')->name('agencies.users.destroy')->can('deleteUsers', 'agency');
     Route::post('agencies/{agency}/users/', 'createUser')->name('agencies.users.create')->can('createUsers', 'agency');
