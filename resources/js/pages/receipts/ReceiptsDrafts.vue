@@ -18,6 +18,7 @@
         { title: 'Страховая', key: 'insurer_name', align: 'start' },
 		{ title: 'Тип договора', key: 'contract_name', align: 'start' },
 		{ title: 'Стоимость', key: 'amount', align: 'start', value: item => item.amount.toLocaleString('ru-RU')+' ₽' },
+		{ title: 'Оплата', key: 'checkout_url', align: 'center', sortable: false },
 		{ title: 'Действия', key: 'actions', align: 'end', sortable: false }
     ];
 	const receipts = reactive([]);
@@ -135,6 +136,19 @@
 					@update:options="loadItems"
 					density="comfortable"
 				>
+					<template v-slot:item.checkout_url="{ item }">
+						<a :href="route('receipts.checkout-page', item.id)" target="_blank" v-if="userStore.activeAgency.tbank_credentials?.terminal">
+							К оплате
+							<v-icon
+								icon="mdi-open-in-new"
+								variant="plain"
+								size="small"
+								color="primary"
+								v-tooltip:bottom="'Открыть в новой вкладке'"
+							></v-icon>
+						</a>
+						<span v-else>Не подключена</span>
+					</template>
 					<template v-slot:item.actions="{ item }">
 						<v-icon
 							class="me-2"

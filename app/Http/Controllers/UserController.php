@@ -13,14 +13,14 @@ class UserController extends Controller
 {
     public function currentUser()
     {
-        return response()->json(auth()->user()->load('agencies'));
+        return response()->json(auth()->user()->load('agencies.tbankCredentials'));
     }
 
     public function updateProfile(ProfileUpdateRequest $request)
     {
         auth()->user()->update($request->validated());
 
-        return response()->json(auth()->user()->load('agencies'));
+        return response()->json(auth()->user()->load('agencies.tbankCredentials'));
     }
 
     public function updatePassword(PasswordUpdateRequest $request)

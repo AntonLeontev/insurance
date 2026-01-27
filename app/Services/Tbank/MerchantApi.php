@@ -3,6 +3,7 @@
 namespace App\Services\Tbank;
 
 use App\Services\Tbank\Exceptions\MerchantApiException;
+use Carbon\Carbon;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
@@ -32,10 +33,10 @@ class MerchantApi
      */
     public function init(
         int $amount,
-        int $orderId,
-        string $phone,
+        string|int $orderId,
         string $email,
         ?string $description = null,
+        ?Carbon $dueDate = null,
         ?string $successUrl = null,
         ?string $failUrl = null,
         ?string $notificationUrl = null,
@@ -46,27 +47,10 @@ class MerchantApi
             'OrderId' => $orderId,
             'Description' => $description,
             'SuccessURL' => $successUrl,
+            'RedirectDueDate' => $dueDate?->format('Y-m-d\TH:i:s\Z') ?? now()->addDay()->format('Y-m-d\TH:i:s\Z'),
             'DATA' => [
-                'Phone' => $phone,
+                // 'Phone' => $phone,
                 'Email' => $email,
-            ],
-            'Receipt' => [
-                'Email' => $email,
-                'EmailCompany' => 'contact@cookforia.ru',
-                'FfdVersion' => '1.2',
-                'Taxation' => 'usn_income_outcome',
-                'Items' => [
-                    [
-                        'Name' => $description,
-                        'Price' => $amount,
-                        'Quantity' => 1.0,
-                        'Amount' => $amount,
-                        'PaymentMethod' => 'full_prepayment',
-                        'PaymentObject' => 'service',
-                        'MeasurementUnit' => '-',
-                        'Tax' => 'none',
-                    ],
-                ],
             ],
         ];
 
@@ -117,6 +101,32 @@ class MerchantApi
         }
 
         return hash('sha256', $token);
+    }
+
+    /**
+     * Проверяет токен вебхука согласно документации Тинькофф
+     *
+     * @param  array  $data  Данные вебхука (все параметры кроме Token)
+     * @param  string  $receivedToken  Токен, полученный в вебхуке
+     */
+    public function verifyWebhookToken(array $data, string $receivedToken): bool
+    {
+        // Исключаем Token и вложенные объекты (Data, Receipt)
+        $filteredData = [];
+        foreach ($data as $key => $value) {
+            if ($key === 'Token') {
+                continue;
+            }
+            if (is_bool($value)) {
+                $value = $value ? 'true' : 'false';
+            }
+            $filteredData[$key] = $value;
+        }
+
+        // Генерируем токен из отфильтрованных данных
+        $calculatedToken = $this->makeToken($filteredData);
+
+        return hash_equals($calculatedToken, $receivedToken);
     }
 
     /**

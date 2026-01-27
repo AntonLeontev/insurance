@@ -80,6 +80,18 @@ export default [
         meta: { auth: true, title: "Возврат" },
     },
     {
+        path: "/receipts/:id/checkout",
+        component: () => import("@/pages/receipts/ReceiptCheckout.vue"),
+        name: "receipts.checkout-page",
+        meta: { title: "Оплата договора страхования" },
+    },
+    {
+        path: "/receipts/:id/payment-success",
+        component: () => import("@/pages/receipts/PaymentSuccess.vue"),
+        name: "receipts.payment-success",
+        meta: { title: "Оплата успешна" },
+    },
+    {
         path: "/agencies",
         component: () => import("@/pages/Agencies.vue"),
         name: "agencies",

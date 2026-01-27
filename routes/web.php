@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\InsurerController;
 use App\Http\Controllers\ReceiptController;
+use App\Http\Controllers\ReceiptPaymentController;
 use App\Http\Controllers\UserController;
 use App\Services\Atol\AtolService;
 use chillerlan\QRCode\QRCode;
@@ -74,7 +75,7 @@ Route::controller(ContractController::class)->group(function () {
         ->name('contracts.destroy');
 });
 
-Route::controller(ReceiptController::class)->group(function () {
+Route::controller(ReceiptController::class)->prefix('app')->group(function () {
     Route::get('receipts', 'index')
         ->name('receipts.index')
         ->middleware(['needAgency']);
@@ -101,6 +102,25 @@ Route::controller(ReceiptController::class)->group(function () {
 });
 
 Route::post('webhooks/atol', AtolWebhookController::class)->name('webhooks.atol');
+
+// Публичные маршруты для онлайн-оплаты чеков
+Route::controller(ReceiptPaymentController::class)->group(function () {
+    Route::get('receipts/{receipt}/checkout', 'checkoutPage')
+        ->whereUuid('receipt')
+        ->name('receipts.checkout-page');
+    Route::get('receipts/{receipt}/checkout-data', 'checkoutData')
+        ->whereUuid('receipt')
+        ->name('receipts.checkout-data');
+    Route::post('receipts/{receipt}/checkout', 'checkout')
+        ->whereUuid('receipt')
+        ->name('receipts.checkout');
+    Route::get('receipts/{receipt}/payment-success', 'paymentSuccess')
+        ->whereUuid('receipt')
+        ->name('receipts.payment-success');
+    Route::post('receipts/{receipt}/payment-webhook', 'paymentWebhook')
+        ->whereUuid('receipt')
+        ->name('receipts.payment-webhook');
+});
 
 Route::view('reset-password', 'app')->name('password.reset');
 Route::view('create-password/{email}/{password}', 'app')->name('password.create');
