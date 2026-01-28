@@ -157,11 +157,15 @@ class ReceiptPaymentController extends Controller
             return 'OK';
         }
 
-        $payment->update([
-            'status' => $request->json('Status'),
-        ]);
+        $data = ['status' => $request->json('Status')];
 
-        if ($request->json('PaymentId') === 'CONFIRMED' && $receipt->is_draft) {
+        if ($request->json('Status') === 'CONFIRMED') {
+            $data['paid_at'] = now();
+        }
+
+        $payment->update($data);
+
+        if ($request->json('Status') === 'CONFIRMED' && $receipt->is_draft) {
             $receipt->is_draft = false;
             $receipt->payment_type = PaymentType::CASHLESS;
             $receipt->submited_at = now();
