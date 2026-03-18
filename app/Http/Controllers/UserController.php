@@ -25,9 +25,15 @@ class UserController extends Controller
 
     public function updatePassword(PasswordUpdateRequest $request)
     {
-        auth()->user()->update([
+        $data = [
             'password' => bcrypt($request->validated('password')),
-        ]);
+        ];
+
+        if (auth()->user()->email_verified_at === null) {
+            $data['email_verified_at'] = now();
+        }
+
+        auth()->user()->update($data);
     }
 
     public function storePassword(PasswordStoreRequest $request)
