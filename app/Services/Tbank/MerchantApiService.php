@@ -16,7 +16,7 @@ class MerchantApiService
                 $receipt->amount * 100,
                 $paymentId,
                 $receipt->client_email,
-                "Оплата страхового полиса. Договор {$receipt->contract_series} {$receipt->contract_number}, вид страхования – {$receipt->contract_name}. Сумма: {$receipt->amount} р.",
+                "Оплата страхового полиса. Договор {$receipt->contract_series} {$receipt->contract_number}, {$receipt->insurer_name} {$receipt->contract_name}. {$receipt->surname} {$receipt->name} {$receipt->patronymic}",
                 $dueDate,
                 route('receipts.payment-success', $receipt->id),
                 notificationUrl: route('receipts.payment-webhook', $receipt)
