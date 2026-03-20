@@ -142,6 +142,15 @@ class ReceiptPaymentController extends Controller
             return response('Invalid token', Response::HTTP_UNAUTHORIZED);
         }
 
+        Log::channel('payments')->info('Вебхук от тбанка', [
+            'receipt_id' => $receipt->id,
+            'payment_id' => $request->json('OrderId'),
+            'tbank_payment_id' => $request->json('PaymentId'),
+            'status' => $request->json('Status'),
+            'amount' => $request->json('Amount'),
+            'success' => $request->json('Success'),
+        ]);
+
         $payment = Payment::where('payment_id', $request->json('PaymentId'))->first();
 
         if (! $payment) {
