@@ -7,6 +7,7 @@ use App\Models\Agency;
 use App\Models\Payment;
 use App\Models\Receipt;
 use App\Services\Atol\AtolService;
+use App\Services\GoogleSheets\AppendPaymentRowToGoogleSheet;
 use App\Services\Tbank\MerchantApi;
 use App\Services\Tbank\MerchantApiService;
 use Illuminate\Http\JsonResponse;
@@ -30,7 +31,7 @@ class ReceiptPaymentController extends Controller
         return response()->json($receipt);
     }
 
-    public function checkout(Receipt $receipt): JsonResponse
+    public function checkout(Receipt $receipt, AppendPaymentRowToGoogleSheet $appendPaymentRowToGoogleSheet): JsonResponse
     {
         abort_unless($receipt->is_draft, Response::HTTP_NOT_FOUND);
 
@@ -63,6 +64,16 @@ class ReceiptPaymentController extends Controller
             'status' => $response->status,
             'redirect_url' => $response->paymentUrl,
         ]);
+
+        try {
+            $appendPaymentRowToGoogleSheet->append($payment, $receipt);
+        } catch (\Throwable $e) {
+            Log::error('Не удалось записать платёж в Google Таблицу', [
+                'payment_id' => $payment->id,
+                'receipt_id' => $receipt->id,
+                'exception' => $e,
+            ]);
+        }
 
         return response()->json([
             'redirect_url' => $response->paymentUrl,

@@ -8,21 +8,14 @@ use App\Http\Controllers\InsurerController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\ReceiptPaymentController;
 use App\Http\Controllers\UserController;
-use App\Services\Atol\AtolService;
-use chillerlan\QRCode\QRCode;
-use chillerlan\QRCode\QROptions;
+use App\Models\Payment;
+use App\Services\GoogleSheets\AppendPaymentRowToGoogleSheet;
 use Illuminate\Support\Facades\Route;
 
 if (config('app.url') === 'http://127.0.0.1:8000') {
-    Route::get('test', function (AtolService $atol) {
-        $data = 't=20250409T1351&s=6608.45&fn=7380440801037213&i=133&fp=2728305220&n=1';
-
-        $options = new QROptions;
-        $options->outputBase64 = false; // output raw image instead of base64 data URI
-
-        $qrcode = base64_encode((new QRCode($options))->render($data));
-
-        return "<img src='data:image/svg+xml;base64,{$qrcode}' width='400' />";
+    Route::get('test', function (AppendPaymentRowToGoogleSheet $google) {
+        $payment = Payment::find(1);
+        // $google->append($payment, $payment->receipt);
     });
 }
 
