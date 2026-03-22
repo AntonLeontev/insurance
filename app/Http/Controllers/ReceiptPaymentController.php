@@ -65,15 +65,17 @@ class ReceiptPaymentController extends Controller
             'redirect_url' => $response->paymentUrl,
         ]);
 
-        try {
-            $appendPaymentRowToGoogleSheet->append($payment, $receipt);
-        } catch (\Throwable $e) {
-            Log::error('Не удалось записать платёж в Google Таблицу', [
-                'payment_id' => $payment->id,
-                'receipt_id' => $receipt->id,
-                'exception' => $e,
-            ]);
-        }
+        defer(function () use ($appendPaymentRowToGoogleSheet, $payment, $receipt) {
+            try {
+                $appendPaymentRowToGoogleSheet->append($payment, $receipt);
+            } catch (\Throwable $e) {
+                Log::error('Не удалось записать платёж в Google Таблицу', [
+                    'payment_id' => $payment->id,
+                    'receipt_id' => $receipt->id,
+                    'exception' => $e,
+                ]);
+            }
+        });
 
         return response()->json([
             'redirect_url' => $response->paymentUrl,

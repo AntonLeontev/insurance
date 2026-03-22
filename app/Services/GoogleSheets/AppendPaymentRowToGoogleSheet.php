@@ -17,7 +17,7 @@ class AppendPaymentRowToGoogleSheet
             return;
         }
 
-        if ($receipt->agency_id !== config('google_sheets.agency_id')) {
+        if ($receipt->agency_id !== (int) config('google_sheets.agency_id')) {
             return;
         }
 
