@@ -61,6 +61,7 @@ function submit() {
 								<span class="normal-case">Cформировать чек с</span>
 								<span class="mx-1 font-bold uppercase">Наличной</span>
 								<span class="lowercase">оплатой</span>
+								<span class="ml-1 font-bold">({{ props.receipt.amount }} ₽)</span>
 							</div>
 						</v-btn>
 						<v-btn color="primary" block v-if="props.receipt.payment_type === 'cashless'" :loading="submitting" @click="submit" class="!h-16 sm:!h-10">
@@ -68,6 +69,7 @@ function submit() {
 								<span class="normal-case">Cформировать чек с</span>
 								<span class="mx-1 font-bold uppercase">безНаличной</span>
 								<span class="lowercase">оплатой</span>
+								<span class="ml-1 font-bold">({{ props.receipt.amount }} ₽)</span>
 							</div>
 						</v-btn>
 						<v-btn color="danger" block @click="$emit('close')">Назад</v-btn>
