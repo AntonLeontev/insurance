@@ -96,6 +96,11 @@
 	function previewWithoutCash() {
 		save('cashless');
 	}
+	function preventArrowKeys(event) {
+		if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+			event.preventDefault();
+		}
+	}
 </script>
 
 <template>
@@ -226,6 +231,7 @@
 							persistent-hint
 							type="number"
 							hide-spin-buttons
+							@keydown="preventArrowKeys"
 						></v-text-field>
 
 						<v-btn color="warning" variant="outlined" @click="save">Сохранить</v-btn>

@@ -97,6 +97,11 @@
 		toastsStore.addSuccess('Чек успешно отправлен в Атол', 2500);
 		router.push({name: 'receipts.submitted'});
 	}
+	function preventArrowKeys(event) {
+		if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+			event.preventDefault();
+		}
+	}
 </script>
 
 <template>
@@ -219,6 +224,7 @@
 							persistent-hint
 							type="number"
 							hide-spin-buttons
+							@keydown="preventArrowKeys"
 						></v-text-field>
 
 						<v-btn color="primary" @click="previewWithCash">Наличная оплата</v-btn>
