@@ -224,6 +224,8 @@
 							:error="editForm.invalid('amount')"
 							:error-messages="editForm.errors.amount"
 							persistent-hint
+							type="number"
+							hide-spin-buttons
 						></v-text-field>
 
 						<v-btn color="warning" variant="outlined" @click="save">Сохранить</v-btn>

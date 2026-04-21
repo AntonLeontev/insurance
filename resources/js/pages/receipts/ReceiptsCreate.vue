@@ -217,6 +217,8 @@
 							:error="createForm.invalid('amount')"
 							:error-messages="createForm.errors.amount"
 							persistent-hint
+							type="number"
+							hide-spin-buttons
 						></v-text-field>
 
 						<v-btn color="primary" @click="previewWithCash">Наличная оплата</v-btn>
