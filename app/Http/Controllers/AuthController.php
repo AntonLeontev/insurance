@@ -22,6 +22,6 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return response()->json(auth()->user()->load('agencies'));
+        return response()->json(auth()->user()->load('agencies.tbankCredentials'));
     }
 }
