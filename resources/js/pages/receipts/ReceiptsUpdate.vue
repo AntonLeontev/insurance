@@ -232,6 +232,7 @@
 							type="number"
 							hide-spin-buttons
 							@keydown="preventArrowKeys"
+							@wheel.prevent
 						></v-text-field>
 
 						<v-btn color="warning" variant="outlined" @click="save">Сохранить</v-btn>
