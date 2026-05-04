@@ -225,6 +225,7 @@
 							type="number"
 							hide-spin-buttons
 							@keydown="preventArrowKeys"
+							@wheel.prevent
 						></v-text-field>
 
 						<v-btn color="primary" @click="previewWithCash">Наличная оплата</v-btn>
