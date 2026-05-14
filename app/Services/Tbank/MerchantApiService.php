@@ -13,7 +13,7 @@ class MerchantApiService
     {
         $response = $this->merchantApi
             ->init(
-                $receipt->amount * 100,
+                (int) $receipt->getAttributes()['amount'],
                 $paymentId,
                 $receipt->client_email,
                 "Оплата страхового полиса. Договор {$receipt->contract_series} {$receipt->contract_number}, {$receipt->insurer_name} {$receipt->contract_name}. {$receipt->surname} {$receipt->name} {$receipt->patronymic}",
