@@ -4,6 +4,7 @@ use App\Http\Controllers\AgencyController;
 use App\Http\Controllers\AtolWebhookController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\FiscalCredentialController;
 use App\Http\Controllers\InsurerController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\ReceiptPaymentController;
@@ -31,9 +32,6 @@ Route::controller(UserController::class)->group(function () {
 
 Route::controller(AgencyController::class)->group(function () {
     Route::post('agencies/{agency}/update-details', 'updateDetails')->middleware('precognitive')->name('agency.update-details');
-    Route::post('agencies/{agency}/update-atol', 'updateAtol')->middleware('precognitive')->name('agency.update-atol');
-    Route::get('agencies/{agency}/tbank', 'getTbank')->name('agency.get-tbank');
-    Route::post('agencies/{agency}/update-tbank', 'updateTbank')->middleware('precognitive')->name('agency.update-tbank');
     Route::get('agencies/{agency}/users', 'users')->name('agencies.users')->can('viewUsers', 'agency');
     Route::delete('agencies/{agency}/users/{id}', 'deleteUser')->name('agencies.users.destroy')->can('deleteUsers', 'agency');
     Route::post('agencies/{agency}/users/', 'createUser')->name('agencies.users.create')->can('createUsers', 'agency');
@@ -41,6 +39,22 @@ Route::controller(AgencyController::class)->group(function () {
         ->middleware(['throttle:3,1'])
         ->name('agencies.users.invite')
         ->can('createUsers', 'agency');
+});
+
+Route::controller(FiscalCredentialController::class)->prefix('app')->group(function () {
+    Route::get('fiscal-credentials', 'index')
+        ->middleware(['needAgency'])
+        ->name('fiscal-credentials.index');
+    Route::post('fiscal-credentials', 'store')
+        ->middleware(['precognitive'])
+        ->name('fiscal-credentials.store');
+    Route::put('fiscal-credentials/{fiscalCredential}', 'update')
+        ->middleware(['precognitive'])
+        ->name('fiscal-credentials.update');
+    Route::delete('fiscal-credentials/{fiscalCredential}', 'destroy')
+        ->name('fiscal-credentials.destroy');
+    Route::post('fiscal-credentials/{fiscalCredential}/set-default', 'setDefault')
+        ->name('fiscal-credentials.set-default');
 });
 
 Route::controller(InsurerController::class)->group(function () {

@@ -2,15 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\AgencyUpdateAtolRequest;
 use App\Http\Requests\AgencyUpdateDetailsRequest;
-use App\Http\Requests\AgencyUpdateTbankRequest;
 use App\Http\Requests\UserCreateRequest;
 use App\Models\Agency;
 use App\Models\AgencyUser;
 use App\Models\User;
 use App\Notifications\UserInvited;
-use App\Services\Atol\AtolService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -23,64 +20,6 @@ class AgencyController extends Controller
         $agency->update($request->validated());
 
         return response()->json($agency);
-    }
-
-    public function updateAtol(AgencyUpdateAtolRequest $request, AtolService $service, Agency $agency)
-    {
-        $agency->update([
-            'group_code' => $request->validated('group_code'),
-            'ffd' => $request->validated('ffd'),
-        ]);
-
-        $token = $service->getToken($request->validated('atol_login'), $request->validated('atol_password'), $agency);
-
-        $data = [
-            ...$request->validated(),
-            'atol_token' => $token,
-            'atol_token_expires' => now()->addHours(24),
-        ];
-
-        $agency->update($data);
-    }
-
-    public function getTbank(Agency $agency)
-    {
-        $credentials = $agency->tbankCredentials;
-
-        if (! $credentials) {
-            $credentials = $agency->tbankCredentials()->create([
-                'terminal' => null,
-                'password' => null,
-            ]);
-        }
-
-        return response()->json($credentials);
-    }
-
-    public function updateTbank(AgencyUpdateTbankRequest $request, Agency $agency)
-    {
-        $credentials = $agency->tbankCredentials;
-
-        if (! $credentials) {
-            $credentials = $agency->tbankCredentials()->create([
-                'terminal' => null,
-                'password' => null,
-            ]);
-        }
-
-        $data = $request->validated();
-
-        // Обновляем пароль только если он передан и не пустой
-        if (isset($data['password']) && $data['password'] !== '') {
-            $credentials->password = $data['password'];
-        }
-
-        // Обновляем терминал
-        $credentials->terminal = $data['terminal'] ?? null;
-
-        $credentials->save();
-
-        return response()->json($credentials);
     }
 
     public function users(Agency $agency, Request $request): JsonResponse

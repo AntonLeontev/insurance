@@ -2,6 +2,7 @@
 
 namespace App\Services\GoogleSheets;
 
+use App\Models\FiscalCredential;
 use App\Models\Payment;
 use App\Models\Receipt;
 use Google\Client;
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class AppendPaymentRowToGoogleSheet
 {
-    public function append(Payment $payment, Receipt $receipt): void
+    public function append(Payment $payment, Receipt $receipt, FiscalCredential $credential): void
     {
         if (! config('google_sheets.enabled')) {
             return;
@@ -54,6 +55,9 @@ class AppendPaymentRowToGoogleSheet
             $receipt->amount,
             (string) ($payment->payment_id ?? ''),
             (string) ($payment->redirect_url ?? ''),
+            '',
+            '',
+            (string) ($credential->name ?? ''),
         ];
 
         $client = new Client;

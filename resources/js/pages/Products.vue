@@ -12,6 +12,7 @@
 	const toastsStore = useToastsStore();
 
 	const insurers = reactive([]);
+	const fiscalCredentials = reactive([]);
 
 	const vats = [
 		{ label: 'Без НДС', value: 'none' },
@@ -23,6 +24,7 @@
 	];
 
 	loadInsurers();
+	loadFiscalCredentials();
 
 	function loadInsurers() {
 		axios.get(route('insurers.index', {agency_id: userStore.activeAgency.id}))
@@ -31,11 +33,19 @@
 			})
 	}
 
+	function loadFiscalCredentials() {
+		axios.get(route('fiscal-credentials.index', { agency_id: userStore.activeAgency.id }))
+			.then(response => {
+				Object.assign(fiscalCredentials, response.data);
+			});
+	}
+
 	const addInsurerModal = ref(false);
 	const saveInsurerForm = useForm('post', route('insurers.store'), {
 		agency_id: userStore.activeAgency.id,
 		name: '',
 		inn: '',
+		fiscal_credential_id: null,
 	});
 	function openAddInsurerModal() {
 		addInsurerModal.value = true;
@@ -61,11 +71,13 @@
 		id: null,
 		name: null,
 		inn: null,
+		fiscal_credential_id: null,
 	});
 	function openEditInsurerModal(item) {
 		editInsurerForm.id = item.id
 		editInsurerForm.name = item.name
 		editInsurerForm.inn = item.inn
+		editInsurerForm.fiscal_credential_id = item.fiscal_credential_id
 		editInsurerModal.value = true;
 	}
 	function editInsurer() {
@@ -74,6 +86,8 @@
 				let insurer = insurers.find(insurer => insurer.id === editInsurerForm.id)
 				insurer.name = editInsurerForm.name;
 				insurer.inn = editInsurerForm.inn;
+				insurer.fiscal_credential_id = editInsurerForm.fiscal_credential_id;
+				insurer.fiscal_credential = response.data.fiscal_credential;
 				
 				editInsurerModal.value = false;
 				editInsurerForm.reset();
@@ -208,8 +222,16 @@
 							:key="insurers.id"
 						>
 							<v-expansion-panel-title v-slot="{ expanded }">
-								<div class="justify-between d-flex w-100">
-									<div>{{ insurer.name }} - [ИНН {{ insurer.inn }}]</div>
+								<div class="justify-between d-flex w-100 align-center">
+									<div class="d-flex align-center ga-2 flex-wrap">
+										<span>{{ insurer.name }} - [ИНН {{ insurer.inn }}]</span>
+										<v-chip
+											v-if="insurer.fiscal_credential"
+											size="small"
+											color="primary"
+											variant="tonal"
+										>{{ insurer.fiscal_credential.name }}</v-chip>
+									</div>
 									<v-fade-transition hide-on-leave>
 										<div class="d-flex ga-3 me-5" v-if="expanded">
 											<v-icon icon="mdi-text-box-plus" color="primary" v-tooltip:bottom="'Добавить договор'" 
@@ -287,6 +309,19 @@
 						<v-text-field v-model="saveInsurerForm.inn" label="ИНН" variant="outlined" persistant-hint
 							:error="saveInsurerForm.invalid('inn')" :error-messages="saveInsurerForm.errors.inn"
 						></v-text-field>
+						<v-select
+							v-model="saveInsurerForm.fiscal_credential_id"
+							:items="fiscalCredentials"
+							item-title="name"
+							item-value="id"
+							label="Фискальные реквизиты"
+							variant="outlined"
+							clearable
+							hint="Если не выбрано — используются реквизиты по умолчанию"
+							persistent-hint
+							:error="saveInsurerForm.invalid('fiscal_credential_id')"
+							:error-messages="saveInsurerForm.errors.fiscal_credential_id"
+						></v-select>
 					</form>
 				</v-card-text>
 
@@ -319,6 +354,19 @@
 						<v-text-field v-model="editInsurerForm.inn" label="ИНН" variant="outlined" persistant-hint
 							:error="editInsurerForm.invalid('inn')" :error-messages="editInsurerForm.errors.inn"
 						></v-text-field>
+						<v-select
+							v-model="editInsurerForm.fiscal_credential_id"
+							:items="fiscalCredentials"
+							item-title="name"
+							item-value="id"
+							label="Фискальные реквизиты"
+							variant="outlined"
+							clearable
+							hint="Если не выбрано — используются реквизиты по умолчанию"
+							persistent-hint
+							:error="editInsurerForm.invalid('fiscal_credential_id')"
+							:error-messages="editInsurerForm.errors.fiscal_credential_id"
+						></v-select>
 					</form>
 				</v-card-text>
 

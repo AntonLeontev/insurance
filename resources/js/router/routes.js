@@ -26,16 +26,10 @@ export default [
         meta: { auth: true, title: "Настройки агенства" },
     },
     {
-        path: "/atol-settings",
-        component: () => import("@/pages/AtolSettings.vue"),
-        name: "atol-settings",
-        meta: { auth: true, title: "Настройки Атол" },
-    },
-    {
-        path: "/tbank-settings",
-        component: () => import("@/pages/TbankSettings.vue"),
-        name: "tbank-settings",
-        meta: { auth: true, title: "Настройки Тбанка" },
+        path: "/fiscal-credentials",
+        component: () => import("@/pages/FiscalCredentials.vue"),
+        name: "fiscal-credentials",
+        meta: { auth: true, title: "Фискальные реквизиты" },
     },
     {
         path: "/products",

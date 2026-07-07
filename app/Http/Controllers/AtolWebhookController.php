@@ -3,22 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ReceiptStatus;
-use App\Models\Agency;
 use App\Models\Receipt;
 use App\Models\User;
 use App\Notifications\ReceiptDone;
 use App\Notifications\ReceiptFail;
+use App\Services\FiscalCredentialResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 
 class AtolWebhookController extends Controller
 {
+    public function __construct(private FiscalCredentialResolver $credentialResolver) {}
+
     public function __invoke(Request $request)
     {
         $receipt = Receipt::find($request->json('external_id'));
 
         $user = User::find($receipt->user_id);
-        $agency = Agency::find($receipt->agency_id);
+        $credential = $this->credentialResolver->resolveForReceipt($receipt);
 
         if ($request->json('status') === 'fail') {
             $needNotification = $receipt->status !== ReceiptStatus::FAIL;
@@ -31,8 +33,8 @@ class AtolWebhookController extends Controller
             if ($needNotification) {
                 $user->notify(new ReceiptFail($receipt->id));
 
-                if ($agency->receipt_email !== null) {
-                    Notification::route('mail', $agency->receipt_email)->notify(new ReceiptFail($receipt->id));
+                if ($credential->receipt_email !== null) {
+                    Notification::route('mail', $credential->receipt_email)->notify(new ReceiptFail($receipt->id));
                 }
             }
         }
@@ -55,8 +57,8 @@ class AtolWebhookController extends Controller
             if ($needNotification) {
                 $user->notify(new ReceiptDone($receipt->id));
 
-                if ($agency->receipt_email !== null) {
-                    Notification::route('mail', $agency->receipt_email)->notify(new ReceiptDone($receipt->id));
+                if ($credential->receipt_email !== null) {
+                    Notification::route('mail', $credential->receipt_email)->notify(new ReceiptDone($receipt->id));
                 }
             }
         }

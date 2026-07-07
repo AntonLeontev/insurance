@@ -137,7 +137,7 @@
 					density="comfortable"
 				>
 					<template v-slot:item.checkout_url="{ item }">
-						<a :href="route('receipts.checkout-page', item.id)" target="_blank" v-if="userStore.activeAgency.tbank_credentials?.terminal">
+						<a :href="route('receipts.checkout-page', item.id)" target="_blank" v-if="item.checkout_available">
 							К оплате
 							<v-icon
 								icon="mdi-open-in-new"

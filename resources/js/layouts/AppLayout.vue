@@ -63,15 +63,9 @@ const drawer = ref(window.innerWidth >= 1280);
 					</RouterLink>
 				</v-list-item>
 				<v-list-item v-if="userStore.activeAgency?.pivot?.role === 'admin'">
-					<RouterLink :to="{ name: 'atol-settings' }" class="d-flex ga-1" :class="$route.name === 'atol-settings' ? 'text-primary' : ''">
+					<RouterLink :to="{ name: 'fiscal-credentials' }" class="d-flex ga-1" :class="$route.name === 'fiscal-credentials' ? 'text-primary' : ''">
 						<v-icon icon="mdi-cash-register"></v-icon>
-						Настройки АТОЛ
-					</RouterLink>
-				</v-list-item>
-				<v-list-item v-if="userStore.activeAgency?.pivot?.role === 'admin'">
-					<RouterLink :to="{ name: 'tbank-settings' }" class="d-flex ga-1" :class="$route.name === 'tbank-settings' ? 'text-primary' : ''">
-						<v-icon icon="mdi-bank"></v-icon>
-						Настройки Тбанка
+						Фискальные реквизиты
 					</RouterLink>
 				</v-list-item>
 				<v-list-item v-if="userStore.activeAgency?.pivot?.role === 'admin'">

@@ -82,7 +82,7 @@ return [
         'telegram' => [
             'driver' => 'custom',
             'via' => Logger\TelegramLogger::class,
-            'level' => 'debug',
+            'level' => 'error',
         ],
 
         'stderr' => [

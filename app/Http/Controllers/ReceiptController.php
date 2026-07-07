@@ -11,7 +11,6 @@ use App\Http\Requests\ReceiptIndexRequest;
 use App\Http\Requests\ReceiptStoreRequest;
 use App\Http\Requests\ReceiptSubmitRequest;
 use App\Http\Requests\ReceiptUpdateRequest;
-use App\Models\Agency;
 use App\Models\AgencyUser;
 use App\Models\Contract;
 use App\Models\Insurer;
@@ -20,6 +19,7 @@ use App\Models\User;
 use App\Notifications\ReceiptDone;
 use App\Notifications\ReceiptFail;
 use App\Services\Atol\AtolService;
+use App\Services\FiscalCredentialResolver;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use chillerlan\QRCode\QRCode;
@@ -32,6 +32,8 @@ use Illuminate\Support\Facades\Notification;
 
 class ReceiptController extends Controller
 {
+    public function __construct(private FiscalCredentialResolver $credentialResolver) {}
+
     public function show(Receipt $receipt): JsonResponse
     {
         $agencyUser = AgencyUser::where('user_id', Auth::id())->where('agency_id', $receipt->agency_id)->first();
@@ -59,6 +61,16 @@ class ReceiptController extends Controller
             ->paginate($request->get('items_per_page', 100))
             ->withQueryString();
 
+        $receipts->getCollection()->transform(function (Receipt $receipt) {
+            $receipt->checkout_available = $receipt->is_draft
+                && $receipt->insurer_id !== null
+                && $this->credentialResolver
+                    ->resolveForReceipt($receipt)
+                    ->hasPaymentTerminal();
+
+            return $receipt;
+        });
+
         return new ReceiptsCollectionDTO($receipts);
     }
 
@@ -69,11 +81,11 @@ class ReceiptController extends Controller
 
         abort_if($contract->insurer_id !== $insurer->id, Response::HTTP_BAD_REQUEST, 'Контракт не принадлежит выбранному страховщику');
 
-        $agency = Agency::find($request->get('agency_id'));
+        $credential = $this->credentialResolver->resolveForInsurer($insurer, $request->get('agency_id'));
 
         Receipt::create([
             ...Arr::except($request->validated(), ['agent_email']),
-            'agent_email' => $agency->email,
+            'agent_email' => $credential->email,
             'user_id' => Auth::id(),
             'insurer_name' => $insurer->name,
             'insurer_inn' => $insurer->inn,
@@ -92,8 +104,11 @@ class ReceiptController extends Controller
 
         abort_if($contract->insurer_id !== $insurer->id, Response::HTTP_BAD_REQUEST, 'Контракт не принадлежит выбранному страховщику');
 
+        $credential = $this->credentialResolver->resolveForInsurer($insurer, $receipt->agency_id);
+
         $receipt->update([
             ...$request->validated(),
+            'agent_email' => $credential->email,
             'insurer_name' => $insurer->name,
             'insurer_inn' => $insurer->inn,
             'contract_name' => $contract->name,
@@ -126,6 +141,8 @@ class ReceiptController extends Controller
             $receipt = Receipt::fromSubmitRequest($request);
         }
 
+        $credential = $this->credentialResolver->resolveForInsurer($insurer, $request->get('agency_id'));
+
         $receipt->insurer_name = $insurer->name;
         $receipt->insurer_inn = $insurer->inn;
         $receipt->contract_name = $contract->name;
@@ -133,8 +150,10 @@ class ReceiptController extends Controller
         $receipt->submited_at = now();
         $receipt->is_draft = false;
         $receipt->payment_type = $request->get('payment_type');
+        $receipt->fiscal_credential_id = $credential->id;
+        $receipt->agent_email = $credential->email;
 
-        $response = $atol->sell($receipt, Agency::find($request->get('agency_id')));
+        $response = $atol->sell($receipt, $credential);
 
         $receipt->external_id = $response->uuid;
         $receipt->status = $response->status;
@@ -149,17 +168,20 @@ class ReceiptController extends Controller
         abort_if(empty($agencyUser), Response::HTTP_FORBIDDEN, 'Доступ запрещен');
         abort_if($agencyUser->role === Role::CASHIER, Response::HTTP_FORBIDDEN, 'Доступ запрещен');
 
+        $credential = $this->credentialResolver->resolveForReceipt($receipt);
+
         $data = $receipt->toArray();
         $data['submited_at'] = now()->format('d.m.Y H:i:s');
         $data['receipt_type'] = ReceiptType::SELL_REFUND->value;
         $data['parent_id'] = $receipt->id;
+        $data['fiscal_credential_id'] = $credential->id;
         data_forget($data, 'id');
         data_forget($data, 'created_at');
         data_forget($data, 'updated_at');
         data_forget($data, 'external_id');
 
         $newReceipt = Receipt::create($data);
-        $response = $atol->sellRefund($newReceipt, Agency::find($receipt->agency_id));
+        $response = $atol->sellRefund($newReceipt, $credential);
 
         $newReceipt->external_id = $response->uuid;
         $newReceipt->status = $response->status;
@@ -177,14 +199,14 @@ class ReceiptController extends Controller
             return response()->json($receipt);
         }
 
-        $response = $atol->report($receipt, Agency::find($receipt->agency_id));
+        $credential = $this->credentialResolver->resolveForReceipt($receipt);
+        $response = $atol->report($receipt, $credential);
 
         if ($response->json('status') === 'wait') {
             return response()->json($receipt);
         }
 
         $user = User::find($receipt->user_id);
-        $agency = Agency::find($receipt->agency_id);
 
         if ($response->json('status') === 'fail') {
             $receipt->update([
@@ -194,8 +216,8 @@ class ReceiptController extends Controller
 
             $user->notify(new ReceiptFail($receipt->id));
 
-            if ($agency->receipt_email !== null) {
-                Notification::route('mail', $agency->receipt_email)->notify(new ReceiptFail($receipt->id));
+            if ($credential->receipt_email !== null) {
+                Notification::route('mail', $credential->receipt_email)->notify(new ReceiptFail($receipt->id));
             }
         }
 
@@ -214,8 +236,8 @@ class ReceiptController extends Controller
 
             $user->notify(new ReceiptDone($receipt->id));
 
-            if ($agency->receipt_email !== null) {
-                Notification::route('mail', $agency->receipt_email)->notify(new ReceiptDone($receipt->id));
+            if ($credential->receipt_email !== null) {
+                Notification::route('mail', $credential->receipt_email)->notify(new ReceiptDone($receipt->id));
             }
         }
 
@@ -224,7 +246,7 @@ class ReceiptController extends Controller
 
     public function pdf(Receipt $receipt)
     {
-        $agency = Agency::find($receipt->agency_id);
+        $fiscalCredential = $this->credentialResolver->resolveForReceipt($receipt);
 
         $time = Carbon::parse($receipt->receipt_datetime)->format('Ymd\THi');
         $data = sprintf('t=%s&s=%s&fn=%s&i=%s&fp=%s&n=%s', $time, $receipt->amount, $receipt->fn_number, $receipt->fiscal_document_number, $receipt->fiscal_document_attribute, $receipt->receipt_type->value === 'sell' ? 1 : 2);
@@ -234,10 +256,9 @@ class ReceiptController extends Controller
 
         $qrcode = base64_encode((new QRCode($options))->render($data));
 
-        $pdf = Pdf::loadView('pdf.receipt', compact('receipt', 'qrcode', 'agency'))
+        $pdf = Pdf::loadView('pdf.receipt', compact('receipt', 'qrcode', 'fiscalCredential'))
             ->setPaper([0, 0, 360, 1000]);
 
-        // return view('pdf.receipt', compact('receipt', 'qrcode', 'agency'));
         return $pdf->download('receipt.pdf');
     }
 }

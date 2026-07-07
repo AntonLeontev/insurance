@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Enums\PaymentType;
-use App\Models\Agency;
 use App\Models\Payment;
 use App\Models\Receipt;
 use App\Services\Atol\AtolService;
+use App\Services\FiscalCredentialResolver;
 use App\Services\GoogleSheets\AppendPaymentRowToGoogleSheet;
 use App\Services\Tbank\MerchantApi;
 use App\Services\Tbank\MerchantApiService;
@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Log;
 
 class ReceiptPaymentController extends Controller
 {
+    public function __construct(private FiscalCredentialResolver $credentialResolver) {}
+
     public function checkoutPage(Receipt $receipt)
     {
         abort_unless($receipt->is_draft, Response::HTTP_NOT_FOUND);
@@ -35,10 +37,13 @@ class ReceiptPaymentController extends Controller
     {
         abort_unless($receipt->is_draft, Response::HTTP_NOT_FOUND);
 
-        $agency = Agency::find($receipt->agency_id);
-        $credentials = $agency->tbankCredentials;
+        $credential = $this->credentialResolver->resolveForReceipt($receipt);
 
-        abort_if(! $credentials || ! $credentials->terminal || ! $credentials->password, Response::HTTP_BAD_REQUEST, 'Настройки платежной системы не настроены');
+        abort_if(
+            ! $credential->hasPaymentTerminal(),
+            Response::HTTP_BAD_REQUEST,
+            'Настройки платежной системы не настроены для выбранной страховой'
+        );
 
         $payment = Payment::where('receipt_id', $receipt->id)->latest()->first();
         if ($payment && $payment->expired_at->isFuture() && $payment->status === 'NEW') {
@@ -47,7 +52,7 @@ class ReceiptPaymentController extends Controller
             ]);
         }
 
-        $merchantApi = new MerchantApi($credentials->terminal, $credentials->password);
+        $merchantApi = new MerchantApi($credential->terminal, $credential->password);
         $service = new MerchantApiService($merchantApi);
 
         $dueDate = now()->addDays(7);
@@ -65,9 +70,9 @@ class ReceiptPaymentController extends Controller
             'redirect_url' => $response->paymentUrl,
         ]);
 
-        defer(function () use ($appendPaymentRowToGoogleSheet, $payment, $receipt) {
+        defer(function () use ($appendPaymentRowToGoogleSheet, $payment, $receipt, $credential) {
             try {
-                $appendPaymentRowToGoogleSheet->append($payment, $receipt);
+                $appendPaymentRowToGoogleSheet->append($payment, $receipt, $credential);
             } catch (\Throwable $e) {
                 Log::error('Не удалось записать платёж в Google Таблицу', [
                     'payment_id' => $payment->id,
@@ -84,54 +89,19 @@ class ReceiptPaymentController extends Controller
 
     public function paymentSuccess(Receipt $receipt, AtolService $atolService)
     {
-        // $payment = Payment::where('receipt_id', $receipt->id)->latest()->first();
-
-        // abort_if(! $payment, Response::HTTP_NOT_FOUND);
-
-        // $agency = Agency::find($receipt->agency_id);
-        // $credentials = $agency->tbankCredentials;
-
-        // abort_if(! $credentials || ! $credentials->terminal || ! $credentials->password, Response::HTTP_BAD_REQUEST, 'Настройки платежной системы не настроены');
-
-        // $merchantApi = new MerchantApi($credentials->terminal, $credentials->password);
-        // $service = new MerchantApiService($merchantApi);
-
-        // $paymentStatus = $service->getPaymentState($payment->payment_id);
-
-        // if ($paymentStatus === 'CONFIRMED' && $receipt->is_draft) {
-        //     $payment->update([
-        //         'status' => $paymentStatus,
-        //         'paid_at' => now(),
-        //     ]);
-
-        //     $receipt->is_draft = false;
-        //     $receipt->payment_type = PaymentType::CASHLESS;
-        //     $receipt->submited_at = now();
-
-        //     $atolResponse = $atolService->sell($receipt, $agency);
-
-        //     $receipt->external_id = $atolResponse->uuid;
-        //     $receipt->status = $atolResponse->status;
-        //     $receipt->save();
-        // } elseif ($paymentStatus === 'CONFIRMED' && ! $receipt->is_draft) {
-        //     // Платеж уже обработан
-        //     $payment->update([
-        //         'status' => $paymentStatus,
-        //         'paid_at' => $payment->paid_at ?? now(),
-        //     ]);
-        // }
-
         return view('app');
     }
 
     public function paymentWebhook(Request $request, Receipt $receipt, AtolService $atolService)
     {
-        $agency = Agency::find($receipt->agency_id);
-        $credentials = $agency->tbankCredentials;
+        $credential = $this->credentialResolver->resolveForReceipt($receipt);
 
-        abort_if(! $credentials || ! $credentials->terminal || ! $credentials->password, Response::HTTP_BAD_REQUEST, 'Настройки платежной системы не настроены');
+        abort_if(
+            ! $credential->hasPaymentTerminal(),
+            Response::HTTP_BAD_REQUEST,
+            'Настройки платежной системы не настроены'
+        );
 
-        // Проверка токена
         $receivedToken = $request->json('Token');
         $webhookData = $request->all();
 
@@ -144,7 +114,7 @@ class ReceiptPaymentController extends Controller
             return response('Token is required', Response::HTTP_UNAUTHORIZED);
         }
 
-        $merchantApi = new MerchantApi($credentials->terminal, $credentials->password);
+        $merchantApi = new MerchantApi($credential->terminal, $credential->password);
 
         if (! $merchantApi->verifyWebhookToken($webhookData, $receivedToken)) {
             Log::channel('telegram')->warning('Неверный токен в вебхуке от Тинькофф', [
@@ -191,9 +161,11 @@ class ReceiptPaymentController extends Controller
             $receipt->is_draft = false;
             $receipt->payment_type = PaymentType::CASHLESS;
             $receipt->submited_at = now();
+            $receipt->fiscal_credential_id = $credential->id;
+            $receipt->agent_email = $credential->email;
             $receipt->save();
 
-            $atolResponse = $atolService->sell($receipt, $agency);
+            $atolResponse = $atolService->sell($receipt, $credential);
 
             $receipt->external_id = $atolResponse->uuid;
             $receipt->status = $atolResponse->status;

@@ -25,12 +25,12 @@
 		<div class="uppercase blue center bold">КАССОВЫЙ ЧЕК / {{ $receipt->receipt_type === ReceiptType::SELL ? 'ПРИХОД' : 'ВОЗВРАТ ПРИХОДА' }}</div>
 		<br>
 		<br>
-		<div class="uppercase blue center bold">{{ $agency->name }}</div>
+		<div class="uppercase blue center bold">{{ $fiscalCredential->name }}</div>
 		<br>
 		<table width="100%">
 			<tbody>
 				<tr>
-					<td>ИНН {{ $agency->inn }}</td>
+					<td>ИНН {{ $fiscalCredential->inn }}</td>
 					<td align="right">Смена № {{ $receipt->shift_number }}</td>
 				</tr>
 				<tr>
@@ -117,7 +117,7 @@
 			<tbody>
 				<tr>
 					<td>Место расчетов</td>
-					<td align="right">{{ $agency->payment_address }}</td>
+					<td align="right">{{ $fiscalCredential->payment_address }}</td>
 				</tr>
 			</tbody>
 		</table>
@@ -145,11 +145,11 @@
 				</tr>
 				<tr>
 					<td>Версия ФФД</td>
-					<td align="right">{{ $agency->ffd->toString() }}</td>
+					<td align="right">{{ $fiscalCredential->ffd->toString() }}</td>
 				</tr>
 				<tr>
 					<td>СНО</td>
-					<td align="right">{{ $agency->sno->toString() }}</td>
+					<td align="right">{{ $fiscalCredential->sno->toString() }}</td>
 				</tr>
 				<tr>
 					<td>Сайт ФНС</td>
@@ -173,7 +173,7 @@
 				</tr>
 				<tr>
 					<td>Эл. адрес отправителя</td>
-					<td align="right">{{ $agency->email }}</td>
+					<td align="right">{{ $fiscalCredential->email }}</td>
 				</tr>
 			</tbody>
 		</table>

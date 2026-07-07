@@ -2,13 +2,10 @@
 
 namespace App\Models;
 
-use App\Enums\Ffd;
-use App\Enums\Sno;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Agency extends Model
 {
@@ -18,27 +15,6 @@ class Agency extends Model
     protected $fillable = [
         'name',
         'inn',
-        'sno',
-        'email',
-        'payment_address',
-        'receipt_email',
-        'group_code',
-        'ffd',
-        'atol_login',
-        'atol_password',
-        'atol_token',
-        'atol_token_expires',
-    ];
-
-    protected $casts = [
-        'ffd' => Ffd::class,
-        'atol_token_expires' => 'datetime',
-        'sno' => Sno::class,
-    ];
-
-    protected $hidden = [
-        'atol_token',
-        'atol_password',
     ];
 
     public function users(): BelongsToMany
@@ -51,8 +27,13 @@ class Agency extends Model
         return $this->hasMany(Insurer::class);
     }
 
-    public function tbankCredentials(): HasOne
+    public function fiscalCredentials(): HasMany
     {
-        return $this->hasOne(TbankCredentials::class);
+        return $this->hasMany(FiscalCredential::class);
+    }
+
+    public function defaultFiscalCredential(): ?FiscalCredential
+    {
+        return $this->fiscalCredentials()->where('is_default', true)->first();
     }
 }

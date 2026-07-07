@@ -9,6 +9,7 @@ use App\Enums\ReceiptType;
 use App\Enums\Role;
 use App\Enums\VatAmount;
 use App\Http\Requests\ReceiptSubmitRequest;
+use App\Services\FiscalCredentialResolver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -23,6 +24,7 @@ class Receipt extends Model
     protected $fillable = [
         'external_id',
         'agency_id',
+        'fiscal_credential_id',
         'user_id',
         'receipt_type',
         'name',
@@ -114,7 +116,9 @@ class Receipt extends Model
 
     public static function fromSubmitRequest(ReceiptSubmitRequest $request): static
     {
-        $agency = Agency::find($request->validated('agency_id'));
+        $resolver = app(FiscalCredentialResolver::class);
+        $insurer = Insurer::find($request->validated('insurer_id'));
+        $credential = $resolver->resolveForInsurer($insurer, $request->validated('agency_id'));
 
         $receipt = new static;
 
@@ -129,12 +133,17 @@ class Receipt extends Model
         $receipt->contract_series = $request->validated('contract_series');
         $receipt->contract_number = $request->validated('contract_number');
         $receipt->client_email = $request->validated('client_email');
-        $receipt->agent_email = $agency->email;
+        $receipt->agent_email = $credential->email;
         $receipt->amount = $request->validated('amount');
         $receipt->payment_type = $request->validated('payment_type');
         $receipt->save();
 
         return $receipt;
+    }
+
+    public function fiscalCredential(): BelongsTo
+    {
+        return $this->belongsTo(FiscalCredential::class);
     }
 
     public function user(): BelongsTo

@@ -14,8 +14,11 @@ class InsurerController extends Controller
     public function index(Request $request): JsonResponse
     {
         $insurers = Insurer::where('agency_id', $request->get('agency_id'))
-            ->with(['contracts' => fn ($q) => $q->select(['id', 'name', 'insurer_id', 'vat'])])
-            ->get(['id', 'name', 'inn']);
+            ->with([
+                'contracts' => fn ($q) => $q->select(['id', 'name', 'insurer_id', 'vat']),
+                'fiscalCredential' => fn ($q) => $q->select(['id', 'name', 'is_default']),
+            ])
+            ->get(['id', 'name', 'inn', 'fiscal_credential_id']);
 
         return response()->json($insurers);
     }
@@ -35,7 +38,7 @@ class InsurerController extends Controller
         $insurer = Insurer::find($request->get('id'));
         $insurer->update($request->validated());
 
-        return response()->json($insurer);
+        return response()->json($insurer->load('fiscalCredential'));
     }
 
     public function destroy(Insurer $insurer, InsurerDestroyRequest $request): void

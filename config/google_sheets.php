@@ -9,7 +9,7 @@ return [
     /**
      * A1 range for values.append (sheet name + columns), e.g. Sheet1!A:J or Лист1!A:J
      */
-    'append_range' => env('GOOGLE_SHEETS_APPEND_RANGE', 'Счета!A:J'),
+    'append_range' => env('GOOGLE_SHEETS_APPEND_RANGE', 'Счета!A:M'),
 
     /**
      * Absolute path to the service account JSON key file.

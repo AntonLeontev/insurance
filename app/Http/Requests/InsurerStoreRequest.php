@@ -22,6 +22,7 @@ class InsurerStoreRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'inn' => ['required', 'string', new Digits(10, 12)],
+            'fiscal_credential_id' => ['nullable', 'integer', 'exists:fiscal_credentials,id'],
         ];
     }
 

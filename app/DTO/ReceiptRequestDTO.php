@@ -5,7 +5,7 @@ namespace App\DTO;
 use App\Enums\PaymentType;
 use App\Enums\Sno;
 use App\Enums\VatAmount;
-use App\Models\Agency;
+use App\Models\FiscalCredential;
 use App\Models\Receipt;
 use App\Services\Atol\Enums\ApiVersion;
 use Carbon\Carbon;
@@ -36,7 +36,7 @@ readonly class ReceiptRequestDTO implements JsonSerializable
         public Carbon $submittedAt,
     ) {}
 
-    public static function fromReceipt(Receipt $receipt, Agency $agency, ApiVersion $version): static
+    public static function fromReceipt(Receipt $receipt, FiscalCredential $credential, ApiVersion $version): static
     {
         return new static(
             $version,
@@ -47,9 +47,9 @@ readonly class ReceiptRequestDTO implements JsonSerializable
             $receipt->passport,
             $receipt->client_email,
             $receipt->agent_email,
-            $agency->sno,
-            $agency->inn,
-            $agency->payment_address,
+            $credential->sno,
+            $credential->inn,
+            $credential->payment_address,
             $receipt->contract_name,
             $receipt->vat,
             $receipt->contract_series,
