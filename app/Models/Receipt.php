@@ -12,6 +12,7 @@ use App\Http\Requests\ReceiptSubmitRequest;
 use App\Services\FiscalCredentialResolver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -19,7 +20,7 @@ use Illuminate\Support\Facades\Auth;
 
 class Receipt extends Model
 {
-    use HasUuids;
+    use HasFactory, HasUuids;
 
     protected $fillable = [
         'external_id',

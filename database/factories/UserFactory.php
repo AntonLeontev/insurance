@@ -2,8 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Enums\Role;
-use App\Models\Agency;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -31,8 +29,6 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('12345678'),
             'remember_token' => Str::random(10),
-            'role' => fake()->randomElement(Role::cases())->value,
-            'agency_id' => Agency::inRandomOrder()->first()->id,
         ];
     }
 
