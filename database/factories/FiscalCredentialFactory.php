@@ -43,4 +43,9 @@ class FiscalCredentialFactory extends Factory
             'password' => null,
         ]);
     }
+
+    public function notDefault(): static
+    {
+        return $this->state(fn () => ['is_default' => false]);
+    }
 }

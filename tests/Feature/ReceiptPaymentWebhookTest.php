@@ -4,17 +4,21 @@ namespace Tests\Feature;
 
 use App\Enums\PaymentType;
 use App\Enums\ReceiptStatus;
+use App\Models\Agency;
 use App\Models\FiscalCredential;
+use App\Models\Insurer;
 use App\Models\Payment;
 use App\Models\Receipt;
 use App\Services\Atol\AtolService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Monolog\Handler\NullHandler;
+use Tests\Concerns\CreatesAgencyReceiptContext;
 use Tests\TestCase;
 
 class ReceiptPaymentWebhookTest extends TestCase
 {
+    use CreatesAgencyReceiptContext;
     use RefreshDatabase;
 
     private const PASSWORD = 'secret-password';
@@ -207,6 +211,78 @@ class ReceiptPaymentWebhookTest extends TestCase
         $this->assertNull($receipt->external_id);
     }
 
+    public function test_confirmed_webhook_uses_default_credential_when_insurer_has_no_linked_credential(): void
+    {
+        [$receipt, $defaultCredential] = $this->makeInsurerResolvedReceipt();
+
+        $payment = Payment::factory()->create([
+            'receipt_id' => $receipt->id,
+            'payment_id' => '8617355556',
+            'status' => 'NEW',
+        ]);
+
+        $this->mock(AtolService::class)
+            ->shouldReceive('sell')
+            ->once()
+            ->andReturn((object) [
+                'uuid' => 'atol-uuid-default',
+                'status' => ReceiptStatus::DONE->value,
+            ]);
+
+        $payload = $this->webhookPayload(['PaymentId' => 8617355556]);
+
+        $response = $this->postJson($this->webhookUrl($receipt), $payload);
+
+        $response->assertOk();
+
+        $receipt->refresh();
+        $this->assertFalse($receipt->is_draft);
+        $this->assertSame($defaultCredential->id, $receipt->fiscal_credential_id);
+        $this->assertSame($defaultCredential->email, $receipt->agent_email);
+        $this->assertSame('CONFIRMED', $payment->fresh()->status);
+    }
+
+    public function test_confirmed_webhook_uses_insurer_linked_credential(): void
+    {
+        $insurerTerminal = '888777666555';
+        $insurerPassword = 'insurer-webhook-password';
+
+        [$receipt, $insurerCredential] = $this->makeInsurerResolvedReceipt(
+            insurerCredential: FiscalCredential::factory()->notDefault()->create([
+                'terminal' => $insurerTerminal,
+                'password' => $insurerPassword,
+            ]),
+        );
+
+        $payment = Payment::factory()->create([
+            'receipt_id' => $receipt->id,
+            'payment_id' => '8617355556',
+            'status' => 'NEW',
+        ]);
+
+        $this->mock(AtolService::class)
+            ->shouldReceive('sell')
+            ->once()
+            ->andReturn((object) [
+                'uuid' => 'atol-uuid-insurer',
+                'status' => ReceiptStatus::DONE->value,
+            ]);
+
+        $payload = $this->webhookPayload([
+            'PaymentId' => 8617355556,
+            'TerminalKey' => $insurerTerminal,
+        ], $insurerPassword);
+
+        $response = $this->postJson($this->webhookUrl($receipt), $payload);
+
+        $response->assertOk();
+
+        $receipt->refresh();
+        $this->assertFalse($receipt->is_draft);
+        $this->assertSame($insurerCredential->id, $receipt->fiscal_credential_id);
+        $this->assertSame($insurerCredential->email, $receipt->agent_email);
+    }
+
     /**
      * @return array{0: Receipt, 1: FiscalCredential}
      */
@@ -224,12 +300,53 @@ class ReceiptPaymentWebhookTest extends TestCase
         return [$receipt, $credential];
     }
 
+    /**
+     * Черновик без fiscal_credential_id — резолв через insurer → default/insurer credential.
+     *
+     * @return array{0: Receipt, 1: FiscalCredential}
+     */
+    private function makeInsurerResolvedReceipt(
+        ?FiscalCredential $insurerCredential = null,
+        array $receiptAttrs = [],
+    ): array {
+        $agency = Agency::factory()->create();
+
+        $defaultCredential = FiscalCredential::factory()->create([
+            'agency_id' => $agency->id,
+            'is_default' => true,
+            'terminal' => self::TERMINAL,
+            'password' => self::PASSWORD,
+        ]);
+
+        if ($insurerCredential !== null) {
+            $insurerCredential->update(['agency_id' => $agency->id]);
+        }
+
+        $insurerAttributes = ['agency_id' => $agency->id];
+
+        if ($insurerCredential !== null) {
+            $insurerAttributes['fiscal_credential_id'] = $insurerCredential->id;
+        }
+
+        $insurer = Insurer::factory()->create($insurerAttributes);
+
+        $receipt = Receipt::factory()->create(array_merge([
+            'agency_id' => $agency->id,
+            'insurer_id' => $insurer->id,
+            'fiscal_credential_id' => null,
+        ], $receiptAttrs));
+
+        $resolvedCredential = $insurerCredential ?? $defaultCredential;
+
+        return [$receipt, $resolvedCredential];
+    }
+
     private function webhookUrl(Receipt $receipt): string
     {
         return route('receipts.payment-webhook', $receipt);
     }
 
-    private function webhookPayload(array $overrides = []): array
+    private function webhookPayload(array $overrides = [], ?string $password = null): array
     {
         $payload = array_merge([
             'TerminalKey' => self::TERMINAL,
@@ -244,40 +361,8 @@ class ReceiptPaymentWebhookTest extends TestCase
             'ExpDate' => '1235',
         ], $overrides);
 
-        $payload['Token'] = $this->tbankToken($payload, self::PASSWORD);
+        $payload['Token'] = $this->tbankToken($payload, $password ?? self::PASSWORD);
 
         return $payload;
-    }
-
-    /**
-     * Повторяет алгоритм App\Services\Tbank\MerchantApi::makeToken/verifyWebhookToken.
-     */
-    private function tbankToken(array $payload, string $password): string
-    {
-        $data = [];
-
-        foreach ($payload as $key => $value) {
-            if ($key === 'Token') {
-                continue;
-            }
-
-            if (is_bool($value)) {
-                $value = $value ? 'true' : 'false';
-            }
-
-            $data[$key] = $value;
-        }
-
-        $data['Password'] = $password;
-        ksort($data);
-
-        $concatenated = '';
-        foreach ($data as $value) {
-            if (! is_array($value)) {
-                $concatenated .= $value;
-            }
-        }
-
-        return hash('sha256', $concatenated);
     }
 }
