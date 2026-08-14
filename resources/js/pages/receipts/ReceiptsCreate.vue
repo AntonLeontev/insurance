@@ -17,6 +17,8 @@
 	const selectedInsurer = reactive({});
 	const previewShow = ref(false);
 
+	const processing = ref(false);
+
 	function loadContracts() {
 		const insurer = insurers.find(insurer => insurer.id === createForm.insurer_id);
 
@@ -57,6 +59,7 @@
 	});
 
 	function saveAsDraft() {
+		processing.value = true;
 		createForm.is_draft = true;
 
 		createForm.submit()
@@ -67,6 +70,9 @@
 			})
 			.catch(error => {
 				toastsStore.handleResponseError(error);
+			})
+			.finally(() => {
+				processing.value = false;
 			});
 	} 
 
@@ -228,9 +234,9 @@
 							@wheel.prevent
 						></v-text-field>
 
-						<v-btn color="primary" @click="previewWithCash">Наличная оплата</v-btn>
-						<v-btn color="primary" @click="previewWithoutCash">Безналичная оплата</v-btn>
-						<v-btn color="warning" variant="outlined" @click="saveAsDraft">Сохранить как черновик</v-btn>
+						<v-btn color="primary" @click="previewWithCash" :disabled="processing">Наличная оплата</v-btn>
+						<v-btn color="primary" @click="previewWithoutCash" :disabled="processing">Безналичная оплата</v-btn>
+						<v-btn color="warning" variant="outlined" @click="saveAsDraft" :loading="processing" :disabled="processing">Сохранить как черновик</v-btn>
 						<v-btn color="danger" variant="outlined" @click="clearForm">Очистить</v-btn>
 					</form>
 				</div>

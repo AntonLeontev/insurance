@@ -82,15 +82,29 @@
 	}
 
 	const refundModal = ref(false);
+	const refunding = ref(false);
 	function openRefundModal(item) {
+		if (refunding.value) {
+			return;
+		}
+
 		selectedReceipt.value = item
 		refundModal.value = true
 	}
 	function makeRefund() {
+		if (refunding.value) {
+			return;
+		}
+
+		refunding.value = true;
+
 		axios.post(route('receipts.refund', selectedReceipt.value?.id))
 			.then(response => loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value }))
 			.catch(error => toastsStore.handleResponseError(error))
-			.finally(() => refundModal.value = false)
+			.finally(() => {
+				refundModal.value = false
+				refunding.value = false
+			})
 	}
 
 	const updatingStatus = ref(false);
@@ -254,6 +268,7 @@
 			width="auto"
 			max-width="600"
 			min-width="400"
+			:persistent="refunding"
 		>
 			<v-card
 				prepend-icon="mdi-receipt-text-outline"
@@ -261,7 +276,7 @@
 				<template v-slot:title>
 					<div class="justify-between d-flex align-center">
 						Пробить возврат
-						<v-btn icon="mdi-close" variant="plain" @click="refundModal = false"></v-btn>
+						<v-btn icon="mdi-close" variant="plain" :disabled="refunding" @click="refundModal = false"></v-btn>
 					</div>
 				</template>
 
@@ -270,8 +285,8 @@
 				</v-card-text>
 
 				<template v-slot:actions>
-					<v-btn @click="makeRefund">Да</v-btn>
-					<v-btn @click="refundModal = false">Отмена</v-btn>
+					<v-btn :loading="refunding" :disabled="refunding" @click="makeRefund">Да</v-btn>
+					<v-btn :disabled="refunding" @click="refundModal = false">Отмена</v-btn>
 				</template>
 			</v-card>
 		</v-dialog>
