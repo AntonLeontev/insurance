@@ -63,7 +63,6 @@ trait CreatesAgencyReceiptContext
             'contract_series' => 'АА',
             'contract_number' => '12345',
             'client_email' => 'client@example.com',
-            'agent_email' => 'agent@example.com',
             'amount' => 10000,
             'is_draft' => false,
             'payment_type' => PaymentType::CASH->value,

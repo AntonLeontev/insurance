@@ -52,7 +52,6 @@
 		contract_series: null,
 		contract_number: null,
 		client_email: null,
-		agent_email: null,
 		amount: null,
 		payment_type: null,
 		is_draft: true,
@@ -82,7 +81,7 @@
 	}
 
 	function previewWithCash() {
-		createForm.touch(['name', 'surname', 'patronymic', 'passport', 'insurer_id', 'contract_id', 'contract_series', 'contract_number', 'client_email', 'agent_email', 'amount'])
+		createForm.touch(['name', 'surname', 'patronymic', 'passport', 'insurer_id', 'contract_id', 'contract_series', 'contract_number', 'client_email', 'amount'])
 			.validate({
 				onSuccess: (response) => {
 					previewShow.value = true;
@@ -91,7 +90,7 @@
 			});
 	}
 	function previewWithoutCash() {
-		createForm.touch(['name', 'surname', 'patronymic', 'passport', 'insurer_id', 'contract_id', 'contract_series', 'contract_number', 'client_email', 'agent_email', 'amount'])
+		createForm.touch(['name', 'surname', 'patronymic', 'passport', 'insurer_id', 'contract_id', 'contract_series', 'contract_number', 'client_email', 'amount'])
 			.validate({
 				onSuccess: (response) => {
 					previewShow.value = true;
@@ -207,16 +206,6 @@
 							variant="outlined"
 							:error="createForm.invalid('client_email')"
 							:error-messages="createForm.errors.client_email"
-							persistent-hint
-							type="email"
-						></v-text-field>
-
-						<v-text-field
-							label="Email агента"
-							v-model="createForm.agent_email"
-							variant="outlined"
-							:error="createForm.invalid('agent_email')"
-							:error-messages="createForm.errors.agent_email"
 							persistent-hint
 							type="email"
 						></v-text-field>

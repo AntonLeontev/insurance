@@ -95,4 +95,65 @@ class ReceiptFiscalCredentialSubmitTest extends TestCase
         $this->assertNotSame($defaultCredential->id, $receipt->fiscal_credential_id);
         $this->assertSame($insurerCredential->email, $receipt->agent_email);
     }
+
+    public function test_store_sets_agent_email_from_credential_without_request_field(): void
+    {
+        [$agency, $user] = $this->createAgencyWithUser();
+        $defaultCredential = FiscalCredential::factory()->create([
+            'agency_id' => $agency->id,
+            'is_default' => true,
+            'terminal' => self::TEST_TERMINAL,
+            'password' => self::TEST_PASSWORD,
+        ]);
+        [$insurer, $contract] = $this->createInsurerWithContract($agency);
+
+        $payload = $this->validReceiptPayload($agency, $insurer, $contract, $user, [
+            'is_draft' => true,
+        ]);
+
+        $this->assertArrayNotHasKey('agent_email', $payload);
+
+        $response = $this->actingAs($user)->postJson(route('receipts.store'), $payload);
+
+        $this->assertTrue($response->isSuccessful(), 'Response: '.$response->getContent());
+
+        $receipt = Receipt::query()->where('agency_id', $agency->id)->latest('created_at')->first();
+
+        $this->assertNotNull($receipt, 'Response: '.$response->getContent());
+        $this->assertSame($defaultCredential->email, $receipt->agent_email);
+        $this->assertNull($receipt->fiscal_credential_id);
+    }
+
+    public function test_update_overwrites_agent_email_from_credential_without_request_field(): void
+    {
+        [$agency, $user] = $this->createAgencyWithUser();
+        $defaultCredential = FiscalCredential::factory()->create([
+            'agency_id' => $agency->id,
+            'is_default' => true,
+            'terminal' => self::TEST_TERMINAL,
+            'password' => self::TEST_PASSWORD,
+        ]);
+        [$insurer, $contract] = $this->createInsurerWithContract($agency);
+
+        $receipt = Receipt::factory()->create([
+            'agency_id' => $agency->id,
+            'user_id' => $user->id,
+            'insurer_id' => $insurer->id,
+            'contract_id' => $contract->id,
+            'agent_email' => 'stale-agent@example.com',
+            'is_draft' => true,
+        ]);
+
+        $payload = $this->validReceiptPayload($agency, $insurer, $contract, $user);
+
+        $this->assertArrayNotHasKey('agent_email', $payload);
+
+        $response = $this->actingAs($user)->putJson(route('receipts.update', $receipt), $payload);
+
+        $this->assertTrue($response->isSuccessful(), 'Response: '.$response->getContent());
+
+        $receipt->refresh();
+
+        $this->assertSame($defaultCredential->email, $receipt->agent_email);
+    }
 }

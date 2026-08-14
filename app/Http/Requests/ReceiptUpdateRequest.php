@@ -37,7 +37,6 @@ class ReceiptUpdateRequest extends FormRequest
             'contract_series' => ['required', 'string', 'max:255'],
             'contract_number' => ['required', 'string', 'max:255'],
             'client_email' => ['required', 'email', 'max:255'],
-            'agent_email' => ['required', 'email', 'max:255'],
             'amount' => $amountRules,
         ];
     }
@@ -53,7 +52,6 @@ class ReceiptUpdateRequest extends FormRequest
             'contract_series' => 'серия договора',
             'contract_number' => 'номер договора',
             'client_email' => 'email клиента',
-            'agent_email' => 'email агента',
             'amount' => 'сумма договора',
         ];
     }

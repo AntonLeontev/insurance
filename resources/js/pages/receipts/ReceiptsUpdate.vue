@@ -45,7 +45,6 @@
 				editForm.data.contract_series = response.data.contract_series;
 				editForm.data.contract_number = response.data.contract_number;
 				editForm.data.client_email = response.data.client_email;
-				editForm.data.agent_email = response.data.agent_email;
 				editForm.data.amount = response.data.amount;
 				editForm.data.is_draft = response.data.is_draft;
 
@@ -206,17 +205,6 @@
 							variant="outlined"
 							:error="editForm.invalid('client_email')"
 							:error-messages="editForm.errors.client_email"
-							persistent-hint
-							type="email"
-						></v-text-field>
-
-						<v-text-field
-							clearable
-							label="Email агента"
-							v-model="editForm.data.agent_email"
-							variant="outlined"
-							:error="editForm.invalid('agent_email')"
-							:error-messages="editForm.errors.agent_email"
 							persistent-hint
 							type="email"
 						></v-text-field>

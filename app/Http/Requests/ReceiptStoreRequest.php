@@ -42,7 +42,6 @@ class ReceiptStoreRequest extends FormRequest
             'contract_series' => ['required', 'string', 'max:255'],
             'contract_number' => ['required', 'string', 'max:255'],
             'client_email' => ['required', 'email', 'max:255'],
-            'agent_email' => ['required', 'email', 'max:255'],
             'amount' => $amountRules,
             'is_draft' => ['required', 'boolean'],
         ];
@@ -59,7 +58,6 @@ class ReceiptStoreRequest extends FormRequest
             'contract_series' => 'серия договора',
             'contract_number' => 'номер договора',
             'client_email' => 'email клиента',
-            'agent_email' => 'email агента',
             'amount' => 'сумма договора',
         ];
     }
