@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\PaymentType;
 use App\Models\AgencyUser;
+use App\Rules\ClientEmailNotSistemaMart;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -37,7 +38,7 @@ class ReceiptSubmitRequest extends FormRequest
             'contract_id' => ['required', 'exists:contracts,id'],
             'contract_series' => ['required', 'string', 'max:255'],
             'contract_number' => ['required', 'string', 'max:255'],
-            'client_email' => ['required', 'email', 'max:255'],
+            'client_email' => ['required', 'email', 'max:255', new ClientEmailNotSistemaMart($this->integer('insurer_id') ?: null)],
             'amount' => ['required', 'numeric', 'decimal:0,2', 'min:0'],
             'is_draft' => ['required', 'boolean'],
             'payment_type' => ['required', 'string', Rule::enum(PaymentType::class)],

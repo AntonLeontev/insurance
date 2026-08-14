@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\Role;
 use App\Models\AgencyUser;
+use App\Rules\ClientEmailNotSistemaMart;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
@@ -36,7 +37,7 @@ class ReceiptUpdateRequest extends FormRequest
             'contract_id' => ['required', 'exists:contracts,id'],
             'contract_series' => ['required', 'string', 'max:255'],
             'contract_number' => ['required', 'string', 'max:255'],
-            'client_email' => ['required', 'email', 'max:255'],
+            'client_email' => ['required', 'email', 'max:255', new ClientEmailNotSistemaMart($this->integer('insurer_id') ?: null)],
             'amount' => $amountRules,
         ];
     }
