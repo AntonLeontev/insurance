@@ -6,6 +6,7 @@ use App\DTO\ReceiptsCollectionDTO;
 use App\Enums\ReceiptStatus;
 use App\Enums\ReceiptType;
 use App\Enums\Role;
+use App\Http\Requests\ReceiptCheckRequest;
 use App\Http\Requests\ReceiptDestroyRequest;
 use App\Http\Requests\ReceiptIndexRequest;
 use App\Http\Requests\ReceiptStoreRequest;
@@ -47,7 +48,7 @@ class ReceiptController extends Controller
             abort_if(Auth::user()->agencies->pluck('id')->doesntContain($receipt->agency_id), Response::HTTP_FORBIDDEN, 'Доступ запрещен');
         }
 
-        return response()->json($receipt->load('user'));
+        return response()->json($receipt->load(['user', 'checkedBy:id,name,email']));
     }
 
     public function index(ReceiptIndexRequest $request): JsonResponse|ReceiptsCollectionDTO
@@ -57,7 +58,10 @@ class ReceiptController extends Controller
             ->filters()
             ->sort()
             ->search()
-            ->with(['user' => fn ($q) => $q->select(['email', 'name', 'id'])])
+            ->with([
+                'user' => fn ($q) => $q->select(['email', 'name', 'id']),
+                'checkedBy' => fn ($q) => $q->select(['email', 'name', 'id']),
+            ])
             ->paginate($request->get('items_per_page', 100))
             ->withQueryString();
 
@@ -166,7 +170,11 @@ class ReceiptController extends Controller
         abort_if($receipt->status !== ReceiptStatus::DONE, Response::HTTP_BAD_REQUEST, 'Нельзя сделать возврат по неудачному чеку');
         $agencyUser = AgencyUser::where('user_id', Auth::id())->where('agency_id', $receipt->agency_id)->first();
         abort_if(empty($agencyUser), Response::HTTP_FORBIDDEN, 'Доступ запрещен');
-        abort_if($agencyUser->role === Role::CASHIER, Response::HTTP_FORBIDDEN, 'Доступ запрещен');
+        abort_unless(
+            in_array($agencyUser->role, [Role::ADMIN, Role::SENIOR_CASHIER], true),
+            Response::HTTP_FORBIDDEN,
+            'Доступ запрещен'
+        );
 
         $credential = $this->credentialResolver->resolveForReceipt($receipt);
 
@@ -179,6 +187,9 @@ class ReceiptController extends Controller
         data_forget($data, 'created_at');
         data_forget($data, 'updated_at');
         data_forget($data, 'external_id');
+        $data['is_checked'] = false;
+        $data['checked_by_user_id'] = null;
+        $data['checked_at'] = null;
 
         $newReceipt = Receipt::create($data);
         $response = $atol->sellRefund($newReceipt, $credential);
@@ -187,6 +198,28 @@ class ReceiptController extends Controller
         $newReceipt->status = $response->status;
 
         $newReceipt->save();
+    }
+
+    public function check(ReceiptCheckRequest $request, Receipt $receipt): JsonResponse
+    {
+        $receipt->update([
+            'is_checked' => true,
+            'checked_by_user_id' => Auth::id(),
+            'checked_at' => now(),
+        ]);
+
+        return response()->json($receipt->fresh()->load(['checkedBy:id,name,email']));
+    }
+
+    public function uncheck(ReceiptCheckRequest $request, Receipt $receipt): JsonResponse
+    {
+        $receipt->update([
+            'is_checked' => false,
+            'checked_by_user_id' => null,
+            'checked_at' => null,
+        ]);
+
+        return response()->json($receipt->fresh()->load(['checkedBy:id,name,email']));
     }
 
     public function getStatus(Receipt $receipt, AtolService $atol): JsonResponse

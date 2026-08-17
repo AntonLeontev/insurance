@@ -56,6 +56,12 @@ const drawer = ref(window.innerWidth >= 1280);
 						Оформленные чеки
 					</RouterLink>
 				</v-list-item>
+				<v-list-item v-if="userStore.activeAgency?.pivot?.role === 'admin' || userStore.activeAgency?.pivot?.role === 'accountant'">
+					<RouterLink :to="{ name: 'receipts.reconcile' }" class="d-flex ga-1" :class="$route.name === 'receipts.reconcile' ? 'text-primary' : ''">
+						<v-icon icon="mdi-clipboard-check-outline"></v-icon>
+						Сверка чеков
+					</RouterLink>
+				</v-list-item>
 				<v-list-item v-if="userStore.activeAgency?.pivot?.role === 'admin'">
 					<RouterLink :to="{ name: 'agency-settings' }" class="d-flex ga-1" :class="$route.name === 'agency-settings' ? 'text-primary' : ''">
 						<v-icon icon="mdi-cog"></v-icon>

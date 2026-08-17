@@ -20,6 +20,7 @@
 		{ title: 'Стоимость', key: 'amount', align: 'start' },
 		{ title: 'Статус', key: 'status', align: 'start' },
 		{ title: 'Кассир', key: 'user.email', align: 'start' },
+		{ title: 'Сверен', key: 'is_checked', align: 'start' },
 		{ title: 'Номер ФН', key: 'fn_number', align: 'start' },
 		{ title: 'ФНД', key: 'fiscal_document_number', align: 'start' },
 		{ title: 'ФПД', key: 'fiscal_document_attribute', align: 'start' },
@@ -33,6 +34,14 @@
 	const page = ref(1);
 	const sortBy = ref(null);
 	const search = ref(null);
+	const checkFilter = ref('all');
+	const checkFilterItems = [
+		{ title: 'Все', value: 'all' },
+		{ title: 'Сверенные', value: 'checked' },
+		{ title: 'Не сверенные', value: 'unchecked' },
+	];
+	const dateFrom = ref(null);
+	const dateTo = ref(null);
 	let searchTimeout = null;
 
 	watch(itemsPerPage, () => {
@@ -49,9 +58,41 @@
 			}
 		}, 350);
 	});
+	watch(checkFilter, () => {
+		if (page.value !== 1) {
+			page.value = 1;
+			return;
+		}
+
+		loadItems({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value });
+	});
+	watch([dateFrom, dateTo], () => {
+		if (page.value !== 1) {
+			page.value = 1;
+			return;
+		}
+
+		loadItems({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value });
+	});
 
 	function loadItems({ page: pageNum, itemsPerPage: perPage, sortBy: sort }) {
 		loading.value = true;
+
+		const filters = [{column: 'is_draft', value: 0}];
+
+		if (checkFilter.value === 'checked') {
+			filters.push({ column: 'is_checked', value: 1 });
+		} else if (checkFilter.value === 'unchecked') {
+			filters.push({ column: 'is_checked', value: 0 });
+		}
+
+		if (dateFrom.value) {
+			filters.push({ column: 'submited_at', operator: '>=', value: dateFrom.value });
+		}
+
+		if (dateTo.value) {
+			filters.push({ column: 'submited_at', operator: '<=', value: dateTo.value });
+		}
 
 		axios.get(
 			route('receipts.index'), 
@@ -61,7 +102,7 @@
 				items_per_page: perPage, 
 				sort: sort,
 				search: search.value,
-				filters: [{column: 'is_draft', value: 0}],
+				filters,
 			} }
 		)
 			.then(response => {
@@ -71,6 +112,19 @@
 			.finally(() => {
 				loading.value = false;
 			})
+	}
+
+	function checkTooltip(item) {
+		if (!item.is_checked) {
+			return 'Не сверен';
+		}
+
+		const who = [item.checked_by?.name, item.checked_by?.email].filter(Boolean).join(' / ');
+		const when = item.checked_at
+			? new Date(item.checked_at).toLocaleString('ru-RU')
+			: '';
+
+		return [who, when].filter(Boolean).join(', ') || 'Сверен';
 	}
 
 	const selectedReceipt = ref(null);
@@ -135,10 +189,43 @@
 			<template v-slot:header>
 				<H1>Оформленные чеки</H1>
 
-				<div class="justify-start mt-3 d-flex">
+				<div class="justify-start mt-3 d-flex ga-2">
 					<v-text-field v-model="search" density="compact" placeholder="Поиск" variant="outlined" hide-details max-width="300px" 
 						append-inner-icon="mdi-magnify"
 						clearable
+					/>
+					<v-select
+						v-model="checkFilter"
+						:items="checkFilterItems"
+						label="Сверка"
+						density="compact"
+						variant="outlined"
+						hide-details
+						max-width="220px"
+					/>
+					<v-text-field
+						v-model="dateFrom"
+						type="date"
+						label="От"
+						placeholder="Дата пробития"
+						density="compact"
+						variant="outlined"
+						hide-details
+						clearable
+						:max="dateTo || undefined"
+						max-width="180px"
+					/>
+					<v-text-field
+						v-model="dateTo"
+						type="date"
+						label="До"
+						placeholder="Дата пробития"
+						density="compact"
+						variant="outlined"
+						hide-details
+						clearable
+						:min="dateFrom || undefined"
+						max-width="180px"
 					/>
 				</div>
 			</template>
@@ -166,6 +253,20 @@
 							<v-icon icon="mdi-arrow-top-right" color="danger" v-if="item.receipt_type === 'sell refund'" title="Возврат прихода" />
 							{{ item.amount.toLocaleString('ru-RU')+' ₽' }}
 						</span>
+					</template>
+
+					<template v-slot:item.is_checked="{ item }">
+						<v-icon
+							v-if="item.is_checked"
+							icon="mdi-check-circle"
+							color="primary"
+							v-tooltip:bottom="checkTooltip(item)"
+						/>
+						<v-icon
+							v-else
+							icon="mdi-circle-outline"
+							v-tooltip:bottom="'Не сверен'"
+						/>
 					</template>
 
 					<template v-slot:item.status="{ item }">
@@ -201,7 +302,7 @@
 							class="cursor-pointer me-2"
 							color="danger"
 							v-tooltip:bottom="'Пробить возврат'"
-							v-if="item.status === 'done' && userStore.activeAgency?.pivot?.role !== 'cashier' && item.receipt_type === 'sell'"
+							v-if="item.status === 'done' && (userStore.activeAgency?.pivot?.role === 'admin' || userStore.activeAgency?.pivot?.role === 'senior cashier') && item.receipt_type === 'sell'"
 							@click="openRefundModal(item)"
 						></v-icon>
 						<v-icon

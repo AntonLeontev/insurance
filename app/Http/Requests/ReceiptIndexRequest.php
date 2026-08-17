@@ -44,6 +44,7 @@ class ReceiptIndexRequest extends FormRequest
             'fiscal_document_attribute',
             'ofd_receipt_url',
             'submited_at',
+            'is_checked',
         ];
 
         return [

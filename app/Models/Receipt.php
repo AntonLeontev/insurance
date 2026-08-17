@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Casts\AmountCast;
+use App\Enums\FilterOperator;
 use App\Enums\PaymentType;
 use App\Enums\ReceiptStatus;
 use App\Enums\ReceiptType;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class Receipt extends Model
@@ -57,10 +59,15 @@ class Receipt extends Model
         'ofd_receipt_url',
         'submited_at',
         'parent_id',
+        'is_checked',
+        'checked_by_user_id',
+        'checked_at',
     ];
 
     protected $casts = [
         'is_draft' => 'boolean',
+        'is_checked' => 'boolean',
+        'checked_at' => 'datetime',
         'receipt_type' => ReceiptType::class,
         'payment_type' => PaymentType::class,
         'amount' => AmountCast::class,
@@ -106,13 +113,39 @@ class Receipt extends Model
         });
     }
 
-    public function scopeFilters(Builder $query)
+    public function scopeFilters(Builder $query): void
     {
-        $query->when(request()->has('filters'), function ($query) {
+        $query->when(request()->has('filters'), function (Builder $query): void {
             foreach (request()->get('filters') as $filter) {
-                $query->where($filter['column'], $filter['operator'] ?? '=', $filter['value']);
+                $query->where(
+                    $filter['column'],
+                    $filter['operator'] ?? FilterOperator::EQ->value,
+                    $this->normalizedFilterValue($filter),
+                );
             }
         });
+    }
+
+    private function normalizedFilterValue(array $filter): mixed
+    {
+        $value = $filter['value'];
+        $column = $filter['column'] ?? null;
+        $operator = $filter['operator'] ?? FilterOperator::EQ->value;
+
+        if ($column !== 'submited_at' || ! is_string($value)) {
+            return $value;
+        }
+
+        if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            return $value;
+        }
+
+        $date = Carbon::parse($value);
+
+        return match ($operator) {
+            FilterOperator::LTE->value, FilterOperator::LT->value => $date->endOfDay()->toDateTimeString(),
+            default => $date->startOfDay()->toDateTimeString(),
+        };
     }
 
     public static function fromSubmitRequest(ReceiptSubmitRequest $request): static
@@ -150,6 +183,11 @@ class Receipt extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function checkedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'checked_by_user_id');
     }
 
     public function payment(): HasOne

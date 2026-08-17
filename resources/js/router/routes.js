@@ -74,6 +74,12 @@ export default [
         meta: { auth: true, title: "Возврат" },
     },
     {
+        path: "/receipts/reconcile",
+        component: () => import("@/pages/receipts/ReceiptsReconcile.vue"),
+        name: "receipts.reconcile",
+        meta: { auth: true, title: "Сверка чеков" },
+    },
+    {
         path: "/receipts/:id/checkout",
         component: () => import("@/pages/receipts/ReceiptCheckout.vue"),
         name: "receipts.checkout-page",

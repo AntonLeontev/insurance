@@ -64,6 +64,7 @@
 		// { label: 'Администратор', value: 'admin' },
 		{ label: 'Кассир', value: 'cashier' },
 		{ label: 'Старший кассир', value: 'senior cashier' },
+		{ label: 'Бухгалтер', value: 'accountant' },
 	];
 
 	const creating = ref(false);

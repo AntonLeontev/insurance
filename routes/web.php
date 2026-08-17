@@ -102,6 +102,10 @@ Route::controller(ReceiptController::class)->prefix('app')->group(function () {
         ->name('receipts.get-status');
     Route::post('receipts/{receipt}/refund', 'refund')
         ->name('receipts.refund');
+    Route::post('receipts/{receipt}/check', 'check')
+        ->name('receipts.check');
+    Route::post('receipts/{receipt}/uncheck', 'uncheck')
+        ->name('receipts.uncheck');
     Route::get('receipts/{receipt}/pdf', 'pdf')
         ->name('receipts.pdf');
     Route::get('receipts/{receipt}/details', 'pdf')

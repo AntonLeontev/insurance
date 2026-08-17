@@ -25,6 +25,7 @@ class ReceiptFactory extends Factory
             'client_email' => fake()->safeEmail(),
             'amount' => fake()->numberBetween(1_000, 100_000),
             'is_draft' => true,
+            'is_checked' => false,
             'payment_type' => PaymentType::CASHLESS->value,
         ];
     }
@@ -33,6 +34,7 @@ class ReceiptFactory extends Factory
     {
         return $this->state(fn () => [
             'is_draft' => false,
+            'submited_at' => now(),
         ]);
     }
 }

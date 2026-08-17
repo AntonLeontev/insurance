@@ -7,6 +7,7 @@ enum Role: string
     case ADMIN = 'admin';
     case CASHIER = 'cashier';
     case SENIOR_CASHIER = 'senior cashier';
+    case ACCOUNTANT = 'accountant';
 
     public function name(): string
     {
@@ -14,6 +15,7 @@ enum Role: string
             self::ADMIN => 'Администратор',
             self::CASHIER => 'Кассир',
             self::SENIOR_CASHIER => 'Старший кассир',
+            self::ACCOUNTANT => 'Бухгалтер',
         };
     }
 }

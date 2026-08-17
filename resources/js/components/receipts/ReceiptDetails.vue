@@ -114,11 +114,25 @@
 				<td>Чек продажи</td>
 				<td><a :href="`/receipts/${props.receipt.parent_id}/details`" target="_blank" class="underline">Перейти</a></td>
 			</tr>
+			<tr v-if="hasCheckInfo">
+				<td>Сверен</td>
+				<td>{{ props.receipt.is_checked ? 'да' : 'нет' }}</td>
+			</tr>
+			<tr v-if="checkedByLabel">
+				<td>Кто отметил</td>
+				<td>{{ checkedByLabel }}</td>
+			</tr>
+			<tr v-if="checkedAtLabel">
+				<td>Когда отмечен</td>
+				<td>{{ checkedAtLabel }}</td>
+			</tr>
 		</tbody>
   	</v-table>
 </template>
 
 <script setup>
+	import { computed } from 'vue';
+
 	const props = defineProps({
 		receipt: { required: true, default: {} },
 		width: { required: false },
@@ -132,4 +146,24 @@
 		'vat20': '20%',
 		'vat120': '10/120',
 	};
+
+	const hasCheckInfo = computed(() => typeof props.receipt?.is_checked === 'boolean');
+
+	const checkedByLabel = computed(() => {
+		const checkedBy = props.receipt?.checked_by;
+
+		if (!checkedBy) {
+			return '';
+		}
+
+		return [checkedBy.name, checkedBy.email].filter(Boolean).join(' / ');
+	});
+
+	const checkedAtLabel = computed(() => {
+		if (!props.receipt?.checked_at) {
+			return '';
+		}
+
+		return new Date(props.receipt.checked_at).toLocaleString('ru-RU');
+	});
 </script>
