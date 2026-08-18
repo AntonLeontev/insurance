@@ -21,7 +21,7 @@
 		{ title: 'Фискальные реквизиты', key: 'fiscal_credential.name', align: 'start' },
 		{ title: 'Стоимость', key: 'amount', align: 'start' },
 		{ title: 'Статус', key: 'status', align: 'start' },
-		{ title: 'Оплата', key: 'payment_status', value: item => paymentStatusLabel(item.payments?.[0]), align: 'start', sortable: false },
+		{ title: 'Эквайринг', key: 'payment_status', value: item => paymentStatusLabel(item.payments?.[0]), align: 'start', sortable: false },
 		{ title: 'Кассир', key: 'user.email', align: 'start' },
 		{ title: 'Сверен', key: 'is_checked', align: 'start' },
 		{ title: 'ФН / ФПД / ФНД', key: 'fiscal_marks', align: 'start', sortable: false },
