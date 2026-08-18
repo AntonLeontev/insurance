@@ -1,11 +1,13 @@
 <script setup>
 import Toasts from '@/components/Toasts.vue';
 import Profile from '@/components/Profile.vue';
+import FeedbackDialog from '@/components/FeedbackDialog.vue';
 import { useUserStore } from '@/stores/user';
 import { ref } from 'vue';
 
 const userStore = useUserStore();
 const drawer = ref(window.innerWidth >= 1280);
+const feedbackOpen = ref(false);
 
 </script>
 
@@ -81,6 +83,18 @@ const drawer = ref(window.innerWidth >= 1280);
 					</RouterLink>
 				</v-list-item>
 			</v-list>
+
+			<template #append>
+				<v-divider />
+				<v-list>
+					<v-list-item @click="feedbackOpen = true">
+						<span class="d-flex ga-1">
+							<v-icon icon="mdi-message-text-outline"></v-icon>
+							Обратная связь
+						</span>
+					</v-list-item>
+				</v-list>
+			</template>
 		</v-navigation-drawer>
 
         <v-main>
@@ -90,5 +104,6 @@ const drawer = ref(window.innerWidth >= 1280);
         </v-main>
     </v-app>
 
+	<FeedbackDialog v-model="feedbackOpen" />
 	<Toasts />
 </template>
