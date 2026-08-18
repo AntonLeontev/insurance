@@ -2,38 +2,44 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseFiscalQr } from '../../resources/js/utils/parseFiscalQr.js';
 
-const expected = {
+const compactExpected = {
+	fn_number: '7381440900820352',
+	fiscal_document_number: '13036',
+	fiscal_document_attribute: '528008223',
+};
+
+const canonicalExpected = {
 	fn_number: '73814409008203527',
 	fiscal_document_number: '130367',
 	fiscal_document_attribute: '5280082237',
 };
 
 describe('parseFiscalQr', () => {
-	it('parses a compact scanner string without separators', () => {
+	it('parses a compact scanner string treating 7 before the next key as a delimiter', () => {
 		assert.deepEqual(
 			parseFiscalQr('t=20260817t13327s=5220.897fn=73814409008203527i=130367fp=5280082237n=1'),
-			expected,
+			compactExpected,
 		);
 	});
 
-	it('parses a canonical FNS string with ampersands', () => {
+	it('parses a canonical FNS string with ampersands without stripping trailing 7s', () => {
 		assert.deepEqual(
 			parseFiscalQr('t=20260817T133227&s=5220.89&fn=73814409008203527&i=130367&fp=5280082237&n=1'),
-			expected,
+			canonicalExpected,
 		);
 	});
 
 	it('parses an OFD URL with query string', () => {
 		assert.deepEqual(
 			parseFiscalQr('https://consumer.1-ofd.ru/v1?t=20260817T133227&s=5220.89&fn=73814409008203527&i=130367&fp=5280082237&n=1'),
-			expected,
+			canonicalExpected,
 		);
 	});
 
 	it('ignores whitespace and newlines in a compact string', () => {
 		assert.deepEqual(
 			parseFiscalQr('t=20260817t13327s=5220.897\nfn=73814409008203527 i=130367\r\nfp=5280082237n=1'),
-			expected,
+			compactExpected,
 		);
 	});
 
@@ -49,9 +55,9 @@ describe('parseFiscalQr', () => {
 	it('does not treat n= inside fn= as a key boundary', () => {
 		const parsed = parseFiscalQr('fn=73814409008203527i=130367fp=5280082237n=1');
 
-		assert.equal(parsed.fn_number, '73814409008203527');
-		assert.equal(parsed.fiscal_document_number, '130367');
-		assert.equal(parsed.fiscal_document_attribute, '5280082237');
+		assert.equal(parsed.fn_number, '7381440900820352');
+		assert.equal(parsed.fiscal_document_number, '13036');
+		assert.equal(parsed.fiscal_document_attribute, '528008223');
 		assert.equal(Object.hasOwn(parsed, 'n'), false);
 		assert.deepEqual(Object.keys(parsed), [
 			'fn_number',

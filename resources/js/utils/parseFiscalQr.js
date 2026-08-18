@@ -1,4 +1,4 @@
-const FISCAL_QR_KEYS = /(?<![A-Za-z])(t|s|fn|i|fp|n)=/gi;
+const FISCAL_QR_KEYS = /(?:[&7])?(?<![A-Za-z])(t|s|fn|i|fp|n)=/gi;
 
 export function parseFiscalQr(raw) {
 	const normalized = String(raw ?? '').replace(/[\s\n\r]+/g, '');
