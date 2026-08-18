@@ -132,6 +132,21 @@
 		selectedReceipt.value = item
 		detailsModal.value = true
 	}
+	function onReceiptRowClick(_event, { item }) {
+		openDetailsModal(item?.raw ?? item)
+	}
+
+	function canRefund(item) {
+		if (!item) {
+			return false;
+		}
+
+		const role = userStore.activeAgency?.pivot?.role;
+
+		return item.status === 'done'
+			&& item.receipt_type === 'sell'
+			&& (role === 'admin' || role === 'senior cashier');
+	}
 
 	const refundModal = ref(false);
 	const refunding = ref(false);
@@ -237,6 +252,9 @@
 					:items-length="totalItems"
 					:loading="loading"
 					@update:options="loadItems"
+					@click:row="onReceiptRowClick"
+					:row-props="() => ({ class: 'cursor-pointer' })"
+					hover
 					density="comfortable"
 					item-key="id"
 				>
@@ -301,34 +319,36 @@
 					</template>
 
 					<template v-slot:item.actions="{ item }">
-						<v-icon
-							icon="mdi-restart"
-							variant="plain"
-							size="small"
-							class="cursor-pointer me-2"
-							v-tooltip:bottom="'Обновить статус'"
-							v-if="item.status === 'wait'"
-							@click="updateStatus(item.id)"
-						></v-icon>
-						<v-icon
-							icon="mdi-arrow-u-up-right-bold"
-							variant="plain"
-							size="small"
-							class="cursor-pointer me-2"
-							color="danger"
-							v-tooltip:bottom="'Пробить возврат'"
-							v-if="item.status === 'done' && (userStore.activeAgency?.pivot?.role === 'admin' || userStore.activeAgency?.pivot?.role === 'senior cashier') && item.receipt_type === 'sell'"
-							@click="openRefundModal(item)"
-						></v-icon>
-						<v-icon
-						class="cursor-pointer"
-							size="small"
-							@click="openDetailsModal(item)"
-							color="primary"
-							v-tooltip:bottom="'Подробнее'"
-						>
-							mdi-receipt-text-outline
-						</v-icon>
+						<div @click.stop>
+							<v-icon
+								icon="mdi-restart"
+								variant="plain"
+								size="small"
+								class="cursor-pointer me-2"
+								v-tooltip:bottom="'Обновить статус'"
+								v-if="item.status === 'wait'"
+								@click="updateStatus(item.id)"
+							></v-icon>
+							<v-icon
+								icon="mdi-arrow-u-up-right-bold"
+								variant="plain"
+								size="small"
+								class="cursor-pointer me-2"
+								color="danger"
+								v-tooltip:bottom="'Пробить возврат'"
+								v-if="canRefund(item)"
+								@click="openRefundModal(item)"
+							></v-icon>
+							<v-icon
+							class="cursor-pointer"
+								size="small"
+								@click="openDetailsModal(item)"
+								color="primary"
+								v-tooltip:bottom="'Подробнее'"
+							>
+								mdi-receipt-text-outline
+							</v-icon>
+						</div>
 					</template>
 
 					<template v-slot:no-data>
@@ -353,29 +373,38 @@
 			width="auto"
 			max-width="600"
 			min-width="400"
+			scrollable
+			content-class="receipt-details-dialog"
 		>
-			<v-card
-				prepend-icon="mdi-receipt-text-outline"
-			>
-				<template v-slot:title>
-					<div class="justify-between d-flex align-center">
+			<v-card v-if="selectedReceipt">
+				<v-card-title class="d-flex justify-space-between align-center">
+					<span class="d-flex align-center ga-2">
+						<v-icon icon="mdi-receipt-text-outline" />
 						Просмотр чека
-						<v-btn icon="mdi-close" variant="plain" @click="detailsModal = false"></v-btn>
-					</div>
-				</template>
+					</span>
+					<v-btn icon="mdi-close" variant="plain" @click="detailsModal = false"></v-btn>
+				</v-card-title>
 
 				<v-card-text>
 					<ReceiptDetails :receipt="selectedReceipt" />
-
-					<div class="flex-col mt-6 d-flex ga-3" v-if="selectedReceipt.status === 'wait'">
-						<v-btn color="primary" prepend-icon="mdi-reload" variant="outline" @click="updateStatus(selectedReceipt.id)">Обновить статус</v-btn>
-					</div>
 				</v-card-text>
 
-				<template v-slot:actions>
+				<v-card-actions class="flex-wrap">
+					<v-btn
+						v-if="selectedReceipt.status === 'wait'"
+						color="primary"
+						prepend-icon="mdi-reload"
+						variant="outlined"
+						@click="updateStatus(selectedReceipt.id)"
+					>Обновить статус</v-btn>
+					<v-btn
+						v-if="canRefund(selectedReceipt)"
+						color="danger"
+						@click="openRefundModal(selectedReceipt)"
+					>Оформить возврат</v-btn>
 					<v-btn :href="route('receipts.pdf', selectedReceipt.id)">Скачать PDF</v-btn>
 					<v-btn @click="detailsModal = false">Отмена</v-btn>
-				</template>
+				</v-card-actions>
 			</v-card>
 		</v-dialog>
 
@@ -412,5 +441,13 @@
 <style>
 	.v-table__wrapper {
 		overflow-y: hidden;
+	}
+
+	.receipt-details-dialog {
+		max-height: 90vh;
+	}
+
+	.receipt-details-dialog > .v-card {
+		max-height: 90vh;
 	}
 </style>
