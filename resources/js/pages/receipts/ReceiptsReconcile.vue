@@ -3,7 +3,7 @@
 	import H1 from '@/components/H1.vue';
 	import CrudPage from '@/components/CrudPage.vue';
 	import ReceiptDetails from '@/components/receipts/ReceiptDetails.vue';
-	import { ref } from 'vue';
+	import { nextTick, onMounted, onUnmounted, ref } from 'vue';
 	import { useToastsStore } from '@/stores/toasts';
 	import { useUserStore } from '@/stores/user';
 	import { parseFiscalQr } from '@/utils/parseFiscalQr';
@@ -19,6 +19,48 @@
 	const fiscalDocumentNumber = ref('');
 	const fiscalDocumentAttribute = ref('');
 	const qrInput = ref('');
+	const qrTextarea = ref(null);
+
+	function focusQrInput() {
+		nextTick(() => {
+			qrTextarea.value?.focus();
+		});
+	}
+
+	function resetForm() {
+		qrInput.value = '';
+		fnNumber.value = '';
+		fiscalDocumentNumber.value = '';
+		fiscalDocumentAttribute.value = '';
+		receipt.value = null;
+		focusQrInput();
+	}
+
+	function onWindowKeydown(event) {
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			resetForm();
+			return;
+		}
+
+		if (event.key !== 'Enter' || event.shiftKey || event.isComposing) {
+			return;
+		}
+
+		if (receipt.value && !checking.value && !loading.value) {
+			event.preventDefault();
+			checkReceipt();
+		}
+	}
+
+	onMounted(() => {
+		focusQrInput();
+		window.addEventListener('keydown', onWindowKeydown);
+	});
+
+	onUnmounted(() => {
+		window.removeEventListener('keydown', onWindowKeydown);
+	});
 
 	function applyParsedFiscalQr(parsed) {
 		fnNumber.value = parsed.fn_number;
@@ -93,9 +135,9 @@
 		checking.value = true;
 
 		axios.post(route('receipts.check', receipt.value.id))
-			.then(response => {
-				receipt.value = response.data;
+			.then(() => {
 				toastsStore.addSuccess('Чек отмечен', 2500);
+				resetForm();
 			})
 			.catch(error => toastsStore.handleResponseError(error))
 			.finally(() => {
@@ -137,6 +179,7 @@
 					</div>
 
 					<v-textarea
+						ref="qrTextarea"
 						v-model="qrInput"
 						label="QR-строка сканера"
 						variant="outlined"
@@ -147,13 +190,14 @@
 						@paste="onQrPaste"
 					/>
 
-					<div class="justify-center mt-4 d-flex">
+					<div class="justify-center mt-4 d-flex ga-2">
 						<v-btn type="submit" color="primary" :loading="loading">Найти чек</v-btn>
+						<v-btn type="button" variant="outlined" @click="resetForm">Очистить (Esc)</v-btn>
 					</div>
 				</form>
 
 				<div class="justify-center mt-6 d-flex ga-2" v-if="receipt">
-					<v-btn color="primary" :loading="checking" @click="checkReceipt">Отметить чек</v-btn>
+					<v-btn color="primary" :loading="checking" @click="checkReceipt" v-if="!receipt.is_checked">Отметить чек (Enter)</v-btn>
 					<v-btn
 						v-if="receipt.is_checked"
 						color="secondary"
