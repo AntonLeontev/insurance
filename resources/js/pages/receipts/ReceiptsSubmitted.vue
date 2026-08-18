@@ -21,9 +21,7 @@
 		{ title: 'Статус', key: 'status', align: 'start' },
 		{ title: 'Кассир', key: 'user.email', align: 'start' },
 		{ title: 'Сверен', key: 'is_checked', align: 'start' },
-		{ title: 'Номер ФН', key: 'fn_number', align: 'start' },
-		{ title: 'ФНД', key: 'fiscal_document_number', align: 'start' },
-		{ title: 'ФПД', key: 'fiscal_document_attribute', align: 'start' },
+		{ title: 'ФН / ФПД / ФНД', key: 'fiscal_marks', align: 'start', sortable: false },
 		{ title: 'Действия', key: 'actions', align: 'end', sortable: false }
     ];
 	const receipts = ref([]);
@@ -283,6 +281,23 @@
 							Ошибка
 							<v-icon icon="mdi-information-outline" color="danger" v-tooltip:top="item.error_text" />
 						</span>
+					</template>
+
+					<template v-slot:item.user.email="{ item }">
+						<div>
+							<div v-if="item.user?.name">{{ item.user.name }}</div>
+							<div :class="item.user?.name ? 'text-caption text-medium-emphasis' : ''">
+								{{ item.user?.email }}
+							</div>
+						</div>
+					</template>
+
+					<template v-slot:item.fiscal_marks="{ item }">
+						<div>
+							<div class="text-caption text-nowrap">ФН: {{ item.fn_number }}</div>
+							<div class="text-caption">ФПД: {{ item.fiscal_document_attribute }}</div>
+							<div class="text-caption">ФНД: {{ item.fiscal_document_number }}</div>
+						</div>
 					</template>
 
 					<template v-slot:item.actions="{ item }">

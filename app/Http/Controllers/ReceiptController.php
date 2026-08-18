@@ -48,7 +48,7 @@ class ReceiptController extends Controller
             abort_if(Auth::user()->agencies->pluck('id')->doesntContain($receipt->agency_id), Response::HTTP_FORBIDDEN, 'Доступ запрещен');
         }
 
-        return response()->json($receipt->load(['user', 'checkedBy:id,name,email']));
+        return response()->json($receipt->load($this->receiptDisplayRelations()));
     }
 
     public function index(ReceiptIndexRequest $request): JsonResponse|ReceiptsCollectionDTO
@@ -58,10 +58,7 @@ class ReceiptController extends Controller
             ->filters()
             ->sort()
             ->search()
-            ->with([
-                'user' => fn ($q) => $q->select(['email', 'name', 'id']),
-                'checkedBy' => fn ($q) => $q->select(['email', 'name', 'id']),
-            ])
+            ->with($this->receiptDisplayRelations())
             ->paginate($request->get('items_per_page', 100))
             ->withQueryString();
 
@@ -229,14 +226,14 @@ class ReceiptController extends Controller
         abort_if(empty($agencyUser), Response::HTTP_FORBIDDEN, 'Доступ запрещен');
 
         if ($receipt->status === ReceiptStatus::DONE || $receipt->status === ReceiptStatus::FAIL) {
-            return response()->json($receipt);
+            return response()->json($receipt->load($this->receiptDisplayRelations()));
         }
 
         $credential = $this->credentialResolver->resolveForReceipt($receipt);
         $response = $atol->report($receipt, $credential);
 
         if ($response->json('status') === 'wait') {
-            return response()->json($receipt);
+            return response()->json($receipt->load($this->receiptDisplayRelations()));
         }
 
         $user = User::find($receipt->user_id);
@@ -274,7 +271,7 @@ class ReceiptController extends Controller
             }
         }
 
-        return response()->json($receipt);
+        return response()->json($receipt->load($this->receiptDisplayRelations()));
     }
 
     public function pdf(Receipt $receipt)
@@ -293,5 +290,14 @@ class ReceiptController extends Controller
             ->setPaper([0, 0, 360, 1000]);
 
         return $pdf->download('receipt.pdf');
+    }
+
+    private function receiptDisplayRelations(): array
+    {
+        return [
+            'user' => fn ($q) => $q->select(['id', 'name', 'email']),
+            'checkedBy' => fn ($q) => $q->select(['id', 'name', 'email']),
+            'fiscalCredential' => fn ($q) => $q->withTrashed()->select(['id', 'name']),
+        ];
     }
 }

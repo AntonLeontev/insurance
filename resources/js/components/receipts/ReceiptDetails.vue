@@ -1,6 +1,10 @@
 <template>
 	<v-table density="compact" :style="{width: props.width}" v-if="props.receipt !== null">
 		<tbody>
+			<tr v-if="props.receipt.fiscal_credential?.name">
+				<td width="45%">Фискальные реквизиты</td>
+				<td>{{ props.receipt.fiscal_credential.name }}</td>
+			</tr>
 			<tr>
 				<td width="45%">Фaмилия</td>
 				<td>{{ props.receipt.surname }}</td>
