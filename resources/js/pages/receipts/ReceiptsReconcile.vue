@@ -6,6 +6,7 @@
 	import { ref } from 'vue';
 	import { useToastsStore } from '@/stores/toasts';
 	import { useUserStore } from '@/stores/user';
+	import { parseFiscalQr } from '@/utils/parseFiscalQr';
 	import axios from 'axios';
 
 	const toastsStore = useToastsStore();
@@ -19,33 +20,10 @@
 	const fiscalDocumentAttribute = ref('');
 	const qrInput = ref('');
 
-	function parseFiscalQr(raw) {
-		const normalized = String(raw ?? '').replace(/[\s\n\r]+/g, '');
-
-		if (!normalized) {
-			return null;
-		}
-
-		let query = normalized;
-		const questionIndex = normalized.indexOf('?');
-		if (questionIndex !== -1) {
-			query = normalized.slice(questionIndex + 1);
-		}
-
-		const params = new URLSearchParams(query);
-		const fn = params.get('fn')?.trim();
-		const documentNumber = params.get('i')?.trim();
-		const documentAttribute = params.get('fp')?.trim();
-
-		if (!fn || !documentNumber || !documentAttribute) {
-			return null;
-		}
-
-		return {
-			fn_number: fn,
-			fiscal_document_number: documentNumber,
-			fiscal_document_attribute: documentAttribute,
-		};
+	function applyParsedFiscalQr(parsed) {
+		fnNumber.value = parsed.fn_number;
+		fiscalDocumentNumber.value = parsed.fiscal_document_number;
+		fiscalDocumentAttribute.value = parsed.fiscal_document_attribute;
 	}
 
 	function onQrPaste(event) {
@@ -58,16 +36,24 @@
 
 		event.preventDefault();
 		qrInput.value = text.trim();
-		fnNumber.value = parsed.fn_number;
-		fiscalDocumentNumber.value = parsed.fiscal_document_number;
-		fiscalDocumentAttribute.value = parsed.fiscal_document_attribute;
+		applyParsedFiscalQr(parsed);
 		searchReceipt(parsed);
 	}
 
 	function searchReceipt(values = null) {
-		const fn = values?.fn_number ?? fnNumber.value;
-		const documentNumber = values?.fiscal_document_number ?? fiscalDocumentNumber.value;
-		const documentAttribute = values?.fiscal_document_attribute ?? fiscalDocumentAttribute.value;
+		let parsed = values;
+
+		if (!parsed && qrInput.value) {
+			parsed = parseFiscalQr(qrInput.value);
+
+			if (parsed) {
+				applyParsedFiscalQr(parsed);
+			}
+		}
+
+		const fn = parsed?.fn_number ?? fnNumber.value;
+		const documentNumber = parsed?.fiscal_document_number ?? fiscalDocumentNumber.value;
+		const documentAttribute = parsed?.fiscal_document_attribute ?? fiscalDocumentAttribute.value;
 
 		loading.value = true;
 		receipt.value = null;
