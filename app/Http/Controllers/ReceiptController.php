@@ -8,6 +8,7 @@ use App\Enums\ReceiptType;
 use App\Enums\Role;
 use App\Http\Requests\ReceiptCheckRequest;
 use App\Http\Requests\ReceiptDestroyRequest;
+use App\Http\Requests\ReceiptExportRequest;
 use App\Http\Requests\ReceiptIndexRequest;
 use App\Http\Requests\ReceiptStoreRequest;
 use App\Http\Requests\ReceiptSubmitRequest;
@@ -21,6 +22,7 @@ use App\Notifications\ReceiptDone;
 use App\Notifications\ReceiptFail;
 use App\Services\Atol\AtolService;
 use App\Services\FiscalCredentialResolver;
+use App\Services\ReceiptExcelExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use chillerlan\QRCode\QRCode;
@@ -30,6 +32,8 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReceiptController extends Controller
 {
@@ -73,6 +77,20 @@ class ReceiptController extends Controller
         });
 
         return new ReceiptsCollectionDTO($receipts);
+    }
+
+    public function export(ReceiptExportRequest $request, ReceiptExcelExportService $excelExport): BinaryFileResponse|StreamedResponse
+    {
+        $receipts = Receipt::query()
+            ->avaliableForUser($request->get('agency_id'))
+            ->filters()
+            ->sort()
+            ->search()
+            ->with($this->receiptDisplayRelations())
+            ->where('is_draft', false)
+            ->where('status', ReceiptStatus::DONE);
+
+        return $excelExport->download($receipts);
     }
 
     public function store(ReceiptStoreRequest $request)

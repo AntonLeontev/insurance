@@ -86,6 +86,9 @@ Route::controller(ReceiptController::class)->prefix('app')->group(function () {
     Route::get('receipts', 'index')
         ->name('receipts.index')
         ->middleware(['needAgency']);
+    Route::get('receipts/export', 'export')
+        ->name('receipts.export')
+        ->middleware(['needAgency']);
     Route::get('receipts/{receipt}', 'show')
         ->whereUuid('receipt')
         ->name('receipts.show');

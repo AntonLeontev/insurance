@@ -5,7 +5,7 @@
 	import DataTablePagination from '@/components/DataTablePagination.vue';
 	import ReceiptDetails from '@/components/receipts/ReceiptDetails.vue';
 	import ReceiptPaymentsDialog from '@/components/receipts/ReceiptPaymentsDialog.vue';
-	import { ref, watch } from 'vue';
+	import { computed, ref, shallowRef, watch } from 'vue';
 	import { useUserStore } from '@/stores/user';
 	import { useToastsStore } from '@/stores/toasts';
 	import axios from 'axios';
@@ -13,6 +13,8 @@
 
 	const userStore = useUserStore();
 	const toastsStore = useToastsStore();
+	const isAdmin = computed(() => userStore.activeAgency?.pivot?.role === 'admin');
+	const exporting = shallowRef(false);
 
 	const headers = [
         { title: 'ФИО', align: 'start', key: 'surname' },
@@ -41,6 +43,12 @@
 		{ title: 'Сверенные', value: 'checked' },
 		{ title: 'Не сверенные', value: 'unchecked' },
 	];
+	const receiptTypeFilter = ref('all');
+	const receiptTypeFilterItems = [
+		{ title: 'Все', value: 'all' },
+		{ title: 'Приход', value: 'sell' },
+		{ title: 'Возврат', value: 'sell refund' },
+	];
 	const dateFrom = ref(null);
 	const dateTo = ref(null);
 	let searchTimeout = null;
@@ -67,6 +75,14 @@
 
 		loadItems({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value });
 	});
+	watch(receiptTypeFilter, () => {
+		if (page.value !== 1) {
+			page.value = 1;
+			return;
+		}
+
+		loadItems({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value });
+	});
 	watch([dateFrom, dateTo], () => {
 		if (page.value !== 1) {
 			page.value = 1;
@@ -76,15 +92,17 @@
 		loadItems({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value });
 	});
 
-	function loadItems({ page: pageNum, itemsPerPage: perPage, sortBy: sort }) {
-		loading.value = true;
-
+	function listFilters() {
 		const filters = [{column: 'is_draft', value: 0}];
 
 		if (checkFilter.value === 'checked') {
 			filters.push({ column: 'is_checked', value: 1 });
 		} else if (checkFilter.value === 'unchecked') {
 			filters.push({ column: 'is_checked', value: 0 });
+		}
+
+		if (receiptTypeFilter.value !== 'all') {
+			filters.push({ column: 'receipt_type', value: receiptTypeFilter.value });
 		}
 
 		if (dateFrom.value) {
@@ -95,6 +113,13 @@
 			filters.push({ column: 'submited_at', operator: '<=', value: dateTo.value });
 		}
 
+		return filters;
+	}
+
+	function loadItems({ page: pageNum, itemsPerPage: perPage, sortBy: sort }) {
+		loading.value = true;
+		sortBy.value = sort;
+
 		axios.get(
 			route('receipts.index'), 
 			{ params: { 
@@ -103,7 +128,7 @@
 				items_per_page: perPage, 
 				sort: sort,
 				search: search.value,
-				filters,
+				filters: listFilters(),
 			} }
 		)
 			.then(response => {
@@ -113,6 +138,67 @@
 			.finally(() => {
 				loading.value = false;
 			})
+	}
+
+	function exportFilename(contentDisposition) {
+		const match = /filename\*?=(?:UTF-8''|")?([^";]+)/i.exec(contentDisposition ?? '');
+
+		if (!match) {
+			return `cheki-${new Date().toISOString().slice(0, 10)}.xlsx`;
+		}
+
+		return decodeURIComponent(match[1].trim());
+	}
+
+	function exportToExcel() {
+		if (exporting.value || !isAdmin.value) {
+			return;
+		}
+
+		exporting.value = true;
+
+		axios.get(route('receipts.export', {
+			agency_id: userStore.activeAgency.id,
+			search: search.value,
+			sort: sortBy.value,
+			filters: listFilters(),
+		}), {
+			responseType: 'blob',
+		})
+			.then(response => {
+				const blob = new Blob([response.data], {
+					type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+				});
+				const url = window.URL.createObjectURL(blob);
+				const link = document.createElement('a');
+				link.href = url;
+				link.download = exportFilename(response.headers['content-disposition']);
+				document.body.appendChild(link);
+				link.click();
+				link.remove();
+				window.URL.revokeObjectURL(url);
+			})
+			.catch(error => {
+				const data = error.response?.data;
+
+				if (data instanceof Blob) {
+					data.text().then(text => {
+						try {
+							const parsed = JSON.parse(text);
+							toastsStore.addError(parsed.message ?? 'Не удалось выгрузить чеки');
+						} catch {
+							toastsStore.handleResponseError(error);
+						}
+					});
+
+					return;
+				}
+
+				toastsStore.handleResponseError(error);
+			})
+			.finally(() => {
+				exporting.value = false;
+			});
 	}
 
 	function checkTooltip(item) {
@@ -216,44 +302,64 @@
 			<template v-slot:header>
 				<H1>Оформленные чеки</H1>
 
-				<div class="justify-start mt-3 d-flex ga-2">
-					<v-text-field v-model="search" density="compact" placeholder="Поиск" variant="outlined" hide-details max-width="300px" 
-						append-inner-icon="mdi-magnify"
-						clearable
-					/>
-					<v-select
-						v-model="checkFilter"
-						:items="checkFilterItems"
-						label="Сверка"
-						density="compact"
+				<div class="mt-3 justify-space-between d-flex ga-2 align-center">
+					<div class="flex-wrap justify-start d-flex ga-2">
+						<v-text-field v-model="search" density="compact" placeholder="Поиск" variant="outlined" hide-details width="300px" 
+							append-inner-icon="mdi-magnify"
+							clearable
+						/>
+						<v-select
+							v-model="checkFilter"
+							:items="checkFilterItems"
+							label="Сверка"
+							density="compact"
+							variant="outlined"
+							hide-details
+							max-width="220px"
+						/>
+						<v-select
+							v-model="receiptTypeFilter"
+							:items="receiptTypeFilterItems"
+							label="Тип чека"
+							density="compact"
+							variant="outlined"
+							hide-details
+							max-width="180px"
+						/>
+						<v-text-field
+							v-model="dateFrom"
+							type="date"
+							label="От"
+							placeholder="Дата пробития"
+							density="compact"
+							variant="outlined"
+							hide-details
+							clearable
+							:max="dateTo || undefined"
+							max-width="180px"
+						/>
+						<v-text-field
+							v-model="dateTo"
+							type="date"
+							label="До"
+							placeholder="Дата пробития"
+							density="compact"
+							variant="outlined"
+							hide-details
+							clearable
+							:min="dateFrom || undefined"
+							max-width="180px"
+						/>
+					</div>
+					<v-btn
+						v-if="isAdmin"
+						class="ms-auto text-none"
 						variant="outlined"
-						hide-details
-						max-width="220px"
-					/>
-					<v-text-field
-						v-model="dateFrom"
-						type="date"
-						label="От"
-						placeholder="Дата пробития"
-						density="compact"
-						variant="outlined"
-						hide-details
-						clearable
-						:max="dateTo || undefined"
-						max-width="180px"
-					/>
-					<v-text-field
-						v-model="dateTo"
-						type="date"
-						label="До"
-						placeholder="Дата пробития"
-						density="compact"
-						variant="outlined"
-						hide-details
-						clearable
-						:min="dateFrom || undefined"
-						max-width="180px"
-					/>
+						prepend-icon="mdi-microsoft-excel"
+						:loading="exporting"
+						:disabled="exporting"
+						@click="exportToExcel"
+					>Экспорт в Excel</v-btn>
 				</div>
 			</template>
 
