@@ -14,21 +14,34 @@
 	const userStore = useUserStore();
 	const toastsStore = useToastsStore();
 	const isAdmin = computed(() => userStore.activeAgency?.pivot?.role === 'admin');
+	const canSeeReconciliation = computed(() => {
+		const role = userStore.activeAgency?.pivot?.role;
+
+		return role === 'admin' || role === 'accountant';
+	});
 	const exporting = shallowRef(false);
 
-	const headers = [
-        { title: 'ФИО', align: 'start', key: 'surname' },
-        { title: 'Договор', key: 'contract_series', value: item => `${item.contract_series} ${item.contract_number}`, align: 'start', 'maxWidth': '150px' },
-        { title: 'Страховая', key: 'insurer_name', align: 'start', minWidth: '200px' },
-		{ title: 'Фискальные реквизиты', key: 'fiscal_credential.name', align: 'start' },
-		{ title: 'Стоимость', key: 'amount', align: 'start' },
-		{ title: 'Статус', key: 'status', align: 'start' },
-		{ title: 'Эквайринг', key: 'payment_status', value: item => paymentStatusLabel(item.payments?.[0]), align: 'start', sortable: false },
-		{ title: 'Кассир', key: 'user.email', align: 'start' },
-		{ title: 'Сверен', key: 'is_checked', align: 'start' },
-		{ title: 'ФН / ФПД / ФНД', key: 'fiscal_marks', align: 'start', sortable: false },
-		{ title: 'Действия', key: 'actions', align: 'end', sortable: false }
-    ];
+	const headers = computed(() => {
+		const columns = [
+			{ title: 'ФИО', align: 'start', key: 'surname' },
+			{ title: 'Договор', key: 'contract_series', value: item => `${item.contract_series} ${item.contract_number}`, align: 'start', 'maxWidth': '150px' },
+			{ title: 'Страховая', key: 'insurer_name', align: 'start', minWidth: '200px' },
+			{ title: 'Фискальные реквизиты', key: 'fiscal_credential.name', align: 'start' },
+			{ title: 'Стоимость', key: 'amount', align: 'start' },
+			{ title: 'Статус', key: 'status', align: 'start' },
+			{ title: 'Эквайринг', key: 'payment_status', value: item => paymentStatusLabel(item.payments?.[0]), align: 'start', sortable: false },
+			{ title: 'Кассир', key: 'user.email', align: 'start' },
+			{ title: 'Сверен', key: 'is_checked', align: 'start' },
+			{ title: 'ФН / ФПД / ФНД', key: 'fiscal_marks', align: 'start', sortable: false },
+			{ title: 'Действия', key: 'actions', align: 'end', sortable: false },
+		];
+
+		if (canSeeReconciliation.value) {
+			return columns;
+		}
+
+		return columns.filter(column => column.key !== 'is_checked');
+	});
 	const receipts = ref([]);
 	const loading = ref(false);
 
@@ -75,6 +88,11 @@
 
 		loadItems({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value });
 	});
+	watch(canSeeReconciliation, (visible) => {
+		if (!visible && checkFilter.value !== 'all') {
+			checkFilter.value = 'all';
+		}
+	});
 	watch(receiptTypeFilter, () => {
 		if (page.value !== 1) {
 			page.value = 1;
@@ -95,10 +113,12 @@
 	function listFilters() {
 		const filters = [{column: 'is_draft', value: 0}];
 
-		if (checkFilter.value === 'checked') {
-			filters.push({ column: 'is_checked', value: 1 });
-		} else if (checkFilter.value === 'unchecked') {
-			filters.push({ column: 'is_checked', value: 0 });
+		if (canSeeReconciliation.value) {
+			if (checkFilter.value === 'checked') {
+				filters.push({ column: 'is_checked', value: 1 });
+			} else if (checkFilter.value === 'unchecked') {
+				filters.push({ column: 'is_checked', value: 0 });
+			}
 		}
 
 		if (receiptTypeFilter.value !== 'all') {
@@ -309,6 +329,7 @@
 							clearable
 						/>
 						<v-select
+							v-if="canSeeReconciliation"
 							v-model="checkFilter"
 							:items="checkFilterItems"
 							label="Сверка"
