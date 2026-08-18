@@ -4,10 +4,12 @@
 	import CrudPage from '@/components/CrudPage.vue';
 	import DataTablePagination from '@/components/DataTablePagination.vue';
 	import ReceiptDetails from '@/components/receipts/ReceiptDetails.vue';
+	import ReceiptPaymentsDialog from '@/components/receipts/ReceiptPaymentsDialog.vue';
 	import { reactive, ref, watch } from 'vue';
 	import { useUserStore } from '@/stores/user';
 	import { useToastsStore } from '@/stores/toasts';
 	import axios from 'axios';
+	import { paymentStatusColor, paymentStatusIcon, paymentStatusLabel } from '@/utils/paymentStatus';
 
 	const userStore = useUserStore();
 	const toastsStore = useToastsStore();
@@ -18,7 +20,8 @@
         { title: 'Страховая', key: 'insurer_name', align: 'start' },
 		{ title: 'Тип договора', key: 'contract_name', align: 'start' },
 		{ title: 'Стоимость', key: 'amount', align: 'start', value: item => item.amount.toLocaleString('ru-RU')+' ₽' },
-		{ title: 'Оплата', key: 'checkout_url', align: 'center', sortable: false },
+		{ title: 'Оплата', key: 'payment_status', value: item => paymentStatusLabel(item.payments?.[0]), align: 'start', sortable: false },
+		{ title: 'Ссылка', key: 'checkout_url', align: 'center', sortable: false },
 		{ title: 'Действия', key: 'actions', align: 'end', sortable: false }
     ];
 	const receipts = reactive([]);
@@ -65,6 +68,17 @@
 	}
 
 	const selectedReceipt = ref(null);
+	const selectedPayments = ref([]);
+	const paymentsModal = ref(false);
+
+	function openPaymentsModal(item) {
+		if (!item?.payments?.length) {
+			return;
+		}
+
+		selectedPayments.value = item.payments;
+		paymentsModal.value = true;
+	}
 
 	const detailsModal = ref(false);
 	function openDetailsModal(item) {
@@ -136,6 +150,22 @@
 					@update:options="loadItems"
 					density="comfortable"
 				>
+					<template v-slot:item.payment_status="{ item }">
+						<div
+							v-if="item.payments?.length"
+							class="flex cursor-pointer flex-column align-center"
+							@click.stop="openPaymentsModal(item)"
+						>
+							<v-icon
+								:icon="paymentStatusIcon(item.payments[0])"
+								:color="paymentStatusColor(item.payments[0])"
+							/>
+							{{ paymentStatusLabel(item.payments[0]) }}
+							<div class="">
+								<v-icon icon="mdi-chevron-down" size="small" />
+							</div>
+						</div>
+					</template>
 					<template v-slot:item.checkout_url="{ item }">
 						<a :href="route('receipts.checkout-page', item.id)" target="_blank" v-if="item.checkout_available">
 							К оплате
@@ -150,32 +180,34 @@
 						<span v-else>Не подключена</span>
 					</template>
 					<template v-slot:item.actions="{ item }">
-						<v-icon
-							class="me-2"
-							size="small"
-							@click="openDetailsModal(item)"
-							color="primary"
-							v-tooltip:bottom="'Подробнее'"
-						>
-							mdi-receipt-text-outline
-						</v-icon>
-						<RouterLink :to="{ name: 'receipts.edit', params: { id: item.id } }">
+						<div class="d-flex align-center">
 							<v-icon
-								icon="mdi-pencil"
+								class="me-2"
+								size="small"
+								@click="openDetailsModal(item)"
+								color="primary"
+								v-tooltip:bottom="'Подробнее'"
+							>
+								mdi-receipt-text-outline
+							</v-icon>
+							<RouterLink :to="{ name: 'receipts.edit', params: { id: item.id } }">
+								<v-icon
+									icon="mdi-pencil"
+									variant="plain"
+									size="small"
+									v-tooltip:bottom="'Редактировать'"
+								></v-icon>
+							</RouterLink>
+							<v-btn
+								icon="mdi-trash-can-outline"
 								variant="plain"
 								size="small"
-								v-tooltip:bottom="'Редактировать'"
-							></v-icon>
-						</RouterLink>
-						<v-btn
-							icon="mdi-trash-can-outline"
-							variant="plain"
-							size="small"
-							color="error"
-							v-tooltip:bottom="'Удалить'"
-							@click="openDeleteModal(item)"
-						>
-						</v-btn>
+								color="error"
+								v-tooltip:bottom="'Удалить'"
+								@click="openDeleteModal(item)"
+							>
+							</v-btn>
+						</div>
 					</template>
 
 					<template v-slot:no-data>
@@ -224,6 +256,8 @@
 				</template>
 			</v-card>
 		</v-dialog>
+
+		<ReceiptPaymentsDialog v-model="paymentsModal" :payments="selectedPayments" />
 		
 		<v-dialog
 			v-model="deleting"

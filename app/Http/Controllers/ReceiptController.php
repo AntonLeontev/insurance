@@ -298,6 +298,7 @@ class ReceiptController extends Controller
             'user' => fn ($q) => $q->select(['id', 'name', 'email']),
             'checkedBy' => fn ($q) => $q->select(['id', 'name', 'email']),
             'fiscalCredential' => fn ($q) => $q->withTrashed()->select(['id', 'name']),
+            'payments' => fn ($q) => $q->select(['id', 'receipt_id', 'payment_id', 'status', 'paid_at', 'expired_at', 'created_at'])->latest('id'),
         ];
     }
 }

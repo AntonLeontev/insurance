@@ -4,21 +4,24 @@
 	import CrudPage from '@/components/CrudPage.vue';
 	import DataTablePagination from '@/components/DataTablePagination.vue';
 	import ReceiptDetails from '@/components/receipts/ReceiptDetails.vue';
+	import ReceiptPaymentsDialog from '@/components/receipts/ReceiptPaymentsDialog.vue';
 	import { ref, watch } from 'vue';
 	import { useUserStore } from '@/stores/user';
 	import { useToastsStore } from '@/stores/toasts';
 	import axios from 'axios';
+	import { paymentStatusColor, paymentStatusIcon, paymentStatusLabel } from '@/utils/paymentStatus';
 
 	const userStore = useUserStore();
 	const toastsStore = useToastsStore();
 
 	const headers = [
         { title: 'ФИО', align: 'start', key: 'surname' },
-        { title: 'Договор', key: 'contract_series', value: item => `${item.contract_series} ${item.contract_number}`, align: 'start' },
-        { title: 'Страховая', key: 'insurer_name', align: 'start' },
-		{ title: 'Тип договора', key: 'contract_name', align: 'start' },
+        { title: 'Договор', key: 'contract_series', value: item => `${item.contract_series} ${item.contract_number}`, align: 'start', 'maxWidth': '150px' },
+        { title: 'Страховая', key: 'insurer_name', align: 'start', minWidth: '200px' },
+		{ title: 'Фискальные реквизиты', key: 'fiscal_credential.name', align: 'start' },
 		{ title: 'Стоимость', key: 'amount', align: 'start' },
 		{ title: 'Статус', key: 'status', align: 'start' },
+		{ title: 'Оплата', key: 'payment_status', value: item => paymentStatusLabel(item.payments?.[0]), align: 'start', sortable: false },
 		{ title: 'Кассир', key: 'user.email', align: 'start' },
 		{ title: 'Сверен', key: 'is_checked', align: 'start' },
 		{ title: 'ФН / ФПД / ФНД', key: 'fiscal_marks', align: 'start', sortable: false },
@@ -126,6 +129,17 @@
 	}
 
 	const selectedReceipt = ref(null);
+	const selectedPayments = ref([]);
+	const paymentsModal = ref(false);
+
+	function openPaymentsModal(item) {
+		if (!item?.payments?.length) {
+			return;
+		}
+
+		selectedPayments.value = item.payments;
+		paymentsModal.value = true;
+	}
 
 	const detailsModal = ref(false);
 	function openDetailsModal(item) {
@@ -263,8 +277,17 @@
 							{{ item.surname }} {{ item.name }} {{ item.patronymic ?? '' }}
 						</span>
 					</template>
+					<template v-slot:item.insurer_name="{ item }">
+						<div>
+							<div>{{ item.insurer_name }}</div>
+							<div class="text-caption text-medium-emphasis">{{ item.contract_name }}</div>
+						</div>
+					</template>
+					<template v-slot:item.fiscal_credential.name="{ item }">
+						{{ item.fiscal_credential?.name }}
+					</template>
 					<template v-slot:item.amount="{ item }">
-						<span class="">
+						<span class="text-nowrap">
 							<v-icon icon="mdi-arrow-bottom-left" color="primary" v-if="item.receipt_type === 'sell'" title="Приход" />
 							<v-icon icon="mdi-arrow-top-right" color="danger" v-if="item.receipt_type === 'sell refund'" title="Возврат прихода" />
 							{{ item.amount.toLocaleString('ru-RU')+' ₽' }}
@@ -290,7 +313,7 @@
 							<v-icon icon="mdi-timer-sand" />
 							В обработке
 						</span>
-						<span class="" v-if="item.status === 'done'">
+						<span class="flex flex-column align-center" v-if="item.status === 'done'">
 							<v-icon icon="mdi-check-circle-outline" color="primary" />
 							Успешно
 						</span>
@@ -299,6 +322,23 @@
 							Ошибка
 							<v-icon icon="mdi-information-outline" color="danger" v-tooltip:top="item.error_text" />
 						</span>
+					</template>
+
+					<template v-slot:item.payment_status="{ item }">
+						<div
+							v-if="item.payments?.length"
+							class="flex cursor-pointer flex-column align-center"
+							@click.stop="openPaymentsModal(item)"
+						>
+							<v-icon
+								:icon="paymentStatusIcon(item.payments[0])"
+								:color="paymentStatusColor(item.payments[0])"
+							/>
+							{{ paymentStatusLabel(item.payments[0]) }}
+							<div class="">
+								<v-icon icon="mdi-chevron-down" size="small" />
+							</div>
+						</div>
 					</template>
 
 					<template v-slot:item.user.email="{ item }">
@@ -407,6 +447,8 @@
 				</v-card-actions>
 			</v-card>
 		</v-dialog>
+
+		<ReceiptPaymentsDialog v-model="paymentsModal" :payments="selectedPayments" />
 
 		<v-dialog
 			v-model="refundModal"
