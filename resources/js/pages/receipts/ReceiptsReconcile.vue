@@ -68,11 +68,19 @@
 		fiscalDocumentAttribute.value = parsed.fiscal_document_attribute;
 	}
 
+	function notifyInvalidFiscalQr() {
+		toastsStore.addError('Не удалось разобрать QR-строку', 2500);
+	}
+
 	function onQrPaste(event) {
 		const text = event.clipboardData?.getData('text') ?? '';
 		const parsed = parseFiscalQr(text);
 
 		if (!parsed) {
+			if (text.trim()) {
+				notifyInvalidFiscalQr();
+			}
+
 			return;
 		}
 
@@ -90,6 +98,12 @@
 
 			if (parsed) {
 				applyParsedFiscalQr(parsed);
+			} else {
+				notifyInvalidFiscalQr();
+
+				if (!fnNumber.value || !fiscalDocumentNumber.value || !fiscalDocumentAttribute.value) {
+					return;
+				}
 			}
 		}
 

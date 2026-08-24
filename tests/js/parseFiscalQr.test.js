@@ -36,6 +36,28 @@ describe('parseFiscalQr', () => {
 		);
 	});
 
+	it('parses a scanner string typed on a Russian keyboard layout', () => {
+		assert.deepEqual(
+			parseFiscalQr('е=20260821е10467ы=507ат=73814409008203527ш=132727аз=30227837367т=1'),
+			{
+				fn_number: '7381440900820352',
+				fiscal_document_number: '13272',
+				fiscal_document_attribute: '3022783736',
+			},
+		);
+	});
+
+	it('parses Russian-layout keys mixed with Latin separators', () => {
+		assert.deepEqual(
+			parseFiscalQr('Е=20260821Е1046&Ы=50&АТ=7381440900820352&Ш=13272&АЗ=3022783736&Т=1'),
+			{
+				fn_number: '7381440900820352',
+				fiscal_document_number: '13272',
+				fiscal_document_attribute: '3022783736',
+			},
+		);
+	});
+
 	it('ignores whitespace and newlines in a compact string', () => {
 		assert.deepEqual(
 			parseFiscalQr('t=20260817t13327s=5220.897\nfn=73814409008203527 i=130367\r\nfp=5280082237n=1'),

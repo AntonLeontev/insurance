@@ -1,7 +1,25 @@
 const FISCAL_QR_KEYS = /(?:[&7])?(?<![A-Za-z])(t|s|fn|i|fp|n)=/gi;
 
+const RU_LAYOUT_TO_EN = {
+	й: 'q', ц: 'w', у: 'e', к: 'r', е: 't', н: 'y', г: 'u', ш: 'i', щ: 'o', з: 'p',
+	ф: 'a', ы: 's', в: 'd', а: 'f', п: 'g', р: 'h', о: 'j', л: 'k', д: 'l',
+	я: 'z', ч: 'x', с: 'c', м: 'v', и: 'b', т: 'n', ь: 'm',
+};
+
+function convertRussianLayout(value) {
+	return value.replace(/[а-яё]/gi, (char) => {
+		const mapped = RU_LAYOUT_TO_EN[char.toLowerCase()];
+
+		if (!mapped) {
+			return char;
+		}
+
+		return char === char.toLowerCase() ? mapped : mapped.toUpperCase();
+	});
+}
+
 export function parseFiscalQr(raw) {
-	const normalized = String(raw ?? '').replace(/[\s\n\r]+/g, '');
+	const normalized = convertRussianLayout(String(raw ?? '').replace(/[\s\n\r]+/g, ''));
 
 	if (!normalized) {
 		return null;
