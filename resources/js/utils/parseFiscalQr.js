@@ -1,4 +1,4 @@
-const FISCAL_QR_KEYS = /(?:[&7])?(?<![A-Za-z])(t|s|fn|i|fp|n)=/gi;
+const FISCAL_QR_KEYS = /(?:[&7?])?(?<![A-Za-z])(t|s|fn|i|fp|n)=/gi;
 
 const RU_LAYOUT_TO_EN = {
 	й: 'q', ц: 'w', у: 'e', к: 'r', е: 't', н: 'y', г: 'u', ш: 'i', щ: 'o', з: 'p',
@@ -25,24 +25,17 @@ export function parseFiscalQr(raw) {
 		return null;
 	}
 
-	let query = normalized;
-	const questionIndex = normalized.indexOf('?');
-
-	if (questionIndex !== -1) {
-		query = normalized.slice(questionIndex + 1);
-	}
-
 	const params = {};
 	FISCAL_QR_KEYS.lastIndex = 0;
-	const matches = [...query.matchAll(FISCAL_QR_KEYS)];
+	const matches = [...normalized.matchAll(FISCAL_QR_KEYS)];
 
 	for (let index = 0; index < matches.length; index++) {
 		const match = matches[index];
 		const key = match[1].toLowerCase();
 		const valueStart = match.index + match[0].length;
-		const valueEnd = index + 1 < matches.length ? matches[index + 1].index : query.length;
+		const valueEnd = index + 1 < matches.length ? matches[index + 1].index : normalized.length;
 
-		params[key] = query.slice(valueStart, valueEnd).replace(/^&+|&+$/g, '');
+		params[key] = normalized.slice(valueStart, valueEnd).replace(/^[&?]+|[&?]+$/g, '');
 	}
 
 	const fn = params.fn?.trim();

@@ -47,6 +47,19 @@ describe('parseFiscalQr', () => {
 		);
 	});
 
+	it("parses a scanner string typed on a Russian keyboard layout with question marks", () => {
+        assert.deepEqual(
+            parseFiscalQr(
+                "е=20260821е1046?ы=50?ат=7381440900820352?ш=13272?аз=3022783736?т=1",
+            ),
+            {
+                fn_number: "7381440900820352",
+                fiscal_document_number: "13272",
+                fiscal_document_attribute: "3022783736",
+            },
+        );
+    });
+
 	it('parses Russian-layout keys mixed with Latin separators', () => {
 		assert.deepEqual(
 			parseFiscalQr('Е=20260821Е1046&Ы=50&АТ=7381440900820352&Ш=13272&АЗ=3022783736&Т=1'),
