@@ -221,6 +221,42 @@ class ReceiptReconcileTest extends TestCase
         $this->assertSame($ownReceipt->id, $response->json('data.0.id'));
     }
 
+    public function test_index_can_find_receipt_by_any_single_fiscal_field(): void
+    {
+        [$agency, $user] = $this->createAgencyWithUser(Role::ACCOUNTANT);
+
+        $receipt = Receipt::factory()->create([
+            'agency_id' => $agency->id,
+            'user_id' => $user->id,
+            'fn_number' => '1111222233334444',
+            'fiscal_document_number' => '555',
+            'fiscal_document_attribute' => '6667778889',
+        ]);
+
+        Receipt::factory()->create([
+            'agency_id' => $agency->id,
+            'user_id' => $user->id,
+            'fn_number' => '9999888877776666',
+            'fiscal_document_number' => '111',
+            'fiscal_document_attribute' => '2223334445',
+        ]);
+
+        foreach ([
+            ['column' => 'fn_number', 'value' => '1111222233334444'],
+            ['column' => 'fiscal_document_number', 'value' => '555'],
+            ['column' => 'fiscal_document_attribute', 'value' => '6667778889'],
+        ] as $filter) {
+            $response = $this->actingAs($user)->getJson(route('receipts.index', [
+                'agency_id' => $agency->id,
+                'filters' => [$filter],
+            ]));
+
+            $response->assertOk();
+            $this->assertSame(1, $response->json('total'));
+            $this->assertSame($receipt->id, $response->json('data.0.id'));
+        }
+    }
+
     public function test_refund_copy_does_not_inherit_check_fields(): void
     {
         [$agency, $user] = $this->createAgencyWithUser(Role::ADMIN);

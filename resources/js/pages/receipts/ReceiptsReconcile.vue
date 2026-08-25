@@ -7,6 +7,7 @@
 	import { useToastsStore } from '@/stores/toasts';
 	import { useUserStore } from '@/stores/user';
 	import { parseFiscalQr } from '@/utils/parseFiscalQr';
+	import { buildFiscalSearchFilters } from '@/utils/buildFiscalSearchFilters';
 	import axios from 'axios';
 
 	const toastsStore = useToastsStore();
@@ -100,27 +101,29 @@
 				applyParsedFiscalQr(parsed);
 			} else {
 				notifyInvalidFiscalQr();
-
-				if (!fnNumber.value || !fiscalDocumentNumber.value || !fiscalDocumentAttribute.value) {
-					return;
-				}
 			}
 		}
 
-		const fn = parsed?.fn_number ?? fnNumber.value;
-		const documentNumber = parsed?.fiscal_document_number ?? fiscalDocumentNumber.value;
-		const documentAttribute = parsed?.fiscal_document_attribute ?? fiscalDocumentAttribute.value;
+		const filters = buildFiscalSearchFilters(parsed ?? {
+			fn_number: fnNumber.value,
+			fiscal_document_number: fiscalDocumentNumber.value,
+			fiscal_document_attribute: fiscalDocumentAttribute.value,
+		});
+
+		if (filters.length === 0) {
+			if (!qrInput.value) {
+				toastsStore.addError('Заполните хотя бы одно поле', 2500);
+			}
+
+			return;
+		}
 
 		loading.value = true;
 		receipt.value = null;
 
 		axios.get(route('receipts.index'), { params: {
 			agency_id: userStore.activeAgency.id,
-			filters: [
-				{ column: 'fn_number', value: fn },
-				{ column: 'fiscal_document_number', value: documentNumber },
-				{ column: 'fiscal_document_attribute', value: documentAttribute },
-			],
+			filters,
 		}})
 			.then(response => {
 				if (response.data.total === 0) {
