@@ -32,6 +32,7 @@ class ReceiptIndexRequest extends FormRequest
             'agent_email',
             'amount',
             'is_draft',
+            'fiscal_credential_id',
             'payment_type',
             'status',
             'error_text',

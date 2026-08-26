@@ -56,6 +56,15 @@
 		{ title: 'Сверенные', value: 'checked' },
 		{ title: 'Не сверенные', value: 'unchecked' },
 	];
+	const fiscalCredentialFilter = ref('all');
+	const fiscalCredentials = ref([]);
+	const fiscalCredentialFilterItems = computed(() => [
+		{ title: 'Все', value: 'all' },
+		...fiscalCredentials.value.map(credential => ({
+			title: credential.name,
+			value: credential.id,
+		})),
+	]);
 	const receiptTypeFilter = ref('all');
 	const receiptTypeFilterItems = [
 		{ title: 'Все', value: 'all' },
@@ -88,10 +97,28 @@
 
 		loadItems({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value });
 	});
-	watch(canSeeReconciliation, (visible) => {
-		if (!visible && checkFilter.value !== 'all') {
-			checkFilter.value = 'all';
+	watch(fiscalCredentialFilter, () => {
+		if (page.value !== 1) {
+			page.value = 1;
+			return;
 		}
+
+		loadItems({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: sortBy.value });
+	});
+	watch(canSeeReconciliation, (visible) => {
+		if (!visible) {
+			if (checkFilter.value !== 'all') {
+				checkFilter.value = 'all';
+			}
+
+			if (fiscalCredentialFilter.value !== 'all') {
+				fiscalCredentialFilter.value = 'all';
+			}
+
+			return;
+		}
+
+		loadFiscalCredentials();
 	});
 	watch(receiptTypeFilter, () => {
 		if (page.value !== 1) {
@@ -119,6 +146,10 @@
 			} else if (checkFilter.value === 'unchecked') {
 				filters.push({ column: 'is_checked', value: 0 });
 			}
+
+			if (fiscalCredentialFilter.value !== 'all') {
+				filters.push({ column: 'fiscal_credential_id', value: fiscalCredentialFilter.value });
+			}
 		}
 
 		if (receiptTypeFilter.value !== 'all') {
@@ -135,6 +166,20 @@
 
 		return filters;
 	}
+
+	function loadFiscalCredentials() {
+		if (!canSeeReconciliation.value || !userStore.activeAgency?.id) {
+			fiscalCredentials.value = [];
+			return;
+		}
+
+		axios.get(route('fiscal-credentials.index', { agency_id: userStore.activeAgency.id }))
+			.then(response => {
+				fiscalCredentials.value = response.data;
+			});
+	}
+
+	loadFiscalCredentials();
 
 	function loadItems({ page: pageNum, itemsPerPage: perPage, sortBy: sort }) {
 		loading.value = true;
@@ -337,6 +382,16 @@
 							variant="outlined"
 							hide-details
 							max-width="220px"
+						/>
+						<v-select
+							v-if="canSeeReconciliation"
+							v-model="fiscalCredentialFilter"
+							:items="fiscalCredentialFilterItems"
+							label="Фискальные реквизиты"
+							density="compact"
+							variant="outlined"
+							hide-details
+							max-width="260px"
 						/>
 						<v-select
 							v-model="receiptTypeFilter"
