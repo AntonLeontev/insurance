@@ -33,4 +33,30 @@ class MerchantApiService
             ->getState($paymentId)
             ->json('Status');
     }
+
+    public function getSbpQrSvg(string $paymentId): string
+    {
+        return (string) $this->merchantApi
+            ->getQr($paymentId, 'IMAGE')
+            ->json('Data');
+    }
+
+    public function getSbpDeeplink(string $paymentId, string $bankId): string
+    {
+        return (string) $this->merchantApi
+            ->getQr($paymentId, 'PAYLOAD', $bankId)
+            ->json('Data');
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getSbpBankList(string $deviceType, ?string $os = null): array
+    {
+        $bankList = $this->merchantApi
+            ->getQrBankList($deviceType, $os)
+            ->json('BankList');
+
+        return is_array($bankList) ? $bankList : [];
+    }
 }

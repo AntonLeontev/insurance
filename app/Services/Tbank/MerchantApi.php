@@ -88,6 +88,52 @@ class MerchantApi
         return $response;
     }
 
+    public function getQr(string $paymentId, string $dataType = 'PAYLOAD', ?string $bankId = null): Response
+    {
+        $data = [
+            'TerminalKey' => $this->terminal,
+            'PaymentId' => $paymentId,
+            'PaymentMethod' => 'SBP',
+            'DataType' => $dataType,
+        ];
+
+        if ($bankId !== null && $dataType === 'PAYLOAD') {
+            $data['BankId'] = $bankId;
+        }
+
+        $data['Token'] = $this->makeToken($data);
+
+        $response = $this->client()->post('GetQr', $data);
+
+        $this->checkResponse($response);
+
+        return $response;
+    }
+
+    public function getQrBankList(string $deviceType, ?string $os = null): Response
+    {
+        $device = ['Type' => $deviceType];
+
+        if ($os !== null) {
+            $device['Os'] = $os;
+        }
+
+        $data = [
+            'TerminalKey' => $this->terminal,
+            'ScenarioType' => 'qr',
+            'PaymentMethod' => 'SBP',
+            'Device' => $device,
+        ];
+
+        $data['Token'] = $this->makeToken($data);
+
+        $response = $this->client()->post('GetQrBankList', $data);
+
+        $this->checkResponse($response);
+
+        return $response;
+    }
+
     private function makeToken(array $args): string
     {
         $token = '';

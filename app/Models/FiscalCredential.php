@@ -31,10 +31,12 @@ class FiscalCredential extends Model
         'atol_token_expires',
         'terminal',
         'password',
+        'sbp_only',
     ];
 
     protected $casts = [
         'is_default' => 'boolean',
+        'sbp_only' => 'boolean',
         'ffd' => Ffd::class,
         'sno' => Sno::class,
         'atol_token_expires' => 'datetime',

@@ -82,6 +82,7 @@ function emptyFormData() {
         group_code: "",
         terminal: null,
         password: "",
+        sbp_only: false,
         insurer_ids: [],
     };
 }
@@ -127,6 +128,7 @@ function openEditModal(item) {
         group_code: item.group_code,
         terminal: item.terminal,
         password: "",
+        sbp_only: Boolean(item.sbp_only),
         insurer_ids: item.insurers?.map((i) => i.id) ?? [],
     };
     editForm.errors = {};
@@ -253,7 +255,16 @@ function setDefault() {
                                     >—</span
                                 >
                             </td>
-                            <td>{{ item.terminal ? "Подключён" : "—" }}</td>
+                            <td>
+                                {{ item.terminal ? "Подключён" : "—" }}
+                                <v-chip
+                                    v-if="item.sbp_only"
+                                    size="x-small"
+                                    color="primary"
+                                    class="ms-2"
+                                    >Только СБП</v-chip
+                                >
+                            </td>
                             <td class="text-end">
                                 <div class="flex justify-end items-center">
                                     <v-btn
@@ -402,6 +413,14 @@ function setDefault() {
                             :error="saveForm.invalid('password')"
                             :error-messages="saveForm.errors.password"
                         />
+                        <v-switch
+                            v-model="saveForm.sbp_only"
+                            label="Только СБП (QR)"
+                            color="primary"
+                            hide-details
+                            :error="saveForm.invalid('sbp_only')"
+                            :error-messages="saveForm.errors.sbp_only"
+                        />
                         <v-divider class="my-2" />
                         <v-select
                             v-model="saveForm.insurer_ids"
@@ -528,6 +547,13 @@ function setDefault() {
                             hint="Оставьте пустым, чтобы не менять"
                             variant="outlined"
                             :error-messages="editForm.errors.password"
+                        />
+                        <v-switch
+                            v-model="editForm.data.sbp_only"
+                            label="Только СБП (QR)"
+                            color="primary"
+                            hide-details
+                            :error-messages="editForm.errors.sbp_only"
                         />
                         <v-divider class="my-2" />
                         <v-select

@@ -39,6 +39,7 @@ class FiscalCredentialUpdateRequest extends FormRequest
             'group_code' => ['required', 'string', 'max:255'],
             'terminal' => ['nullable', 'string', 'max:255'],
             'password' => ['nullable', 'string', 'max:255'],
+            'sbp_only' => ['sometimes', 'boolean'],
             'insurer_ids' => ['sometimes', 'array'],
             'insurer_ids.*' => ['integer', 'exists:insurers,id'],
         ];

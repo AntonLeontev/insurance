@@ -133,6 +133,18 @@ Route::controller(ReceiptPaymentController::class)->group(function () {
     Route::post('receipts/{receipt}/checkout', 'checkout')
         ->whereUuid('receipt')
         ->name('receipts.checkout');
+    Route::post('receipts/{receipt}/sbp/qr', 'sbpQr')
+        ->whereUuid('receipt')
+        ->name('receipts.sbp-qr');
+    Route::get('receipts/{receipt}/sbp/banks', 'sbpBanks')
+        ->whereUuid('receipt')
+        ->name('receipts.sbp-banks');
+    Route::post('receipts/{receipt}/sbp/deeplink', 'sbpDeeplink')
+        ->whereUuid('receipt')
+        ->name('receipts.sbp-deeplink');
+    Route::get('receipts/{receipt}/payment-status', 'paymentStatus')
+        ->whereUuid('receipt')
+        ->name('receipts.payment-status');
     Route::get('receipts/{receipt}/payment-success', 'paymentSuccess')
         ->whereUuid('receipt')
         ->name('receipts.payment-success');
