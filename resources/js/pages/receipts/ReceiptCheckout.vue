@@ -300,7 +300,7 @@ onUnmounted(() => {
                     />
                 </v-card-title>
                 <v-card-text>
-                    <div v-if="sbpLoading" class="justify-center d-flex py-6">
+                    <div v-if="sbpLoading" class="justify-center py-6 d-flex">
                         <v-progress-circular indeterminate color="primary" />
                     </div>
                     <v-alert
@@ -369,7 +369,7 @@ onUnmounted(() => {
                         :loading="deeplinkLoading"
                         @click="payInBankApp"
                     >
-                        Оплатить в приложении
+                        Оплатить
                     </v-btn>
                     <v-btn @click="closeSbpDialog">Закрыть</v-btn>
                 </v-card-actions>
