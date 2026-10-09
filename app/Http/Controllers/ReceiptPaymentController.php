@@ -118,7 +118,7 @@ class ReceiptPaymentController extends Controller
 
         try {
             $banks = Cache::remember(
-                "sbp-banks:{$credential->terminal}:{$device}",
+                "sbp-banks:{$device}",
                 now()->addDay(),
                 fn () => $service->getSbpBankList($device),
             );
