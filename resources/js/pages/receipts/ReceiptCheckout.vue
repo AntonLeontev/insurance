@@ -1,5 +1,7 @@
 <script setup>
 import ReceiptDetails from "@/components/receipts/ReceiptDetails.vue";
+import Toasts from "@/components/Toasts.vue";
+import { useToastsStore } from "@/stores/toasts";
 import { computed, reactive, ref, onMounted, onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useDisplay } from "vuetify";
@@ -7,6 +9,7 @@ import axios from "axios";
 
 const currentRoute = useRoute();
 const router = useRouter();
+const toastsStore = useToastsStore();
 const { mobile } = useDisplay();
 
 const receipt = reactive({});
@@ -77,6 +80,16 @@ function loadReceipt() {
         .finally(() => {
             loading.value = false;
         });
+}
+
+async function copyPageLink() {
+    try {
+        await navigator.clipboard.writeText(window.location.href);
+        toastsStore.addSuccess("Скопировано", 1500);
+    } catch (error) {
+        console.error("Не удалось скопировать ссылку:", error);
+        toastsStore.addError("Не удалось скопировать ссылку", 1500);
+    }
 }
 
 function initiatePayment() {
@@ -274,7 +287,7 @@ onUnmounted(() => {
                     <ReceiptDetails :receipt="receipt" width="100%" />
                 </div>
 
-                <div class="justify-center d-flex">
+                <div class="justify-center flex-column align-center d-flex ga-3">
                     <v-btn
                         color="primary"
                         size="large"
@@ -284,6 +297,13 @@ onUnmounted(() => {
                         prepend-icon="mdi-credit-card"
                     >
                         Оплатить онлайн
+                    </v-btn>
+                    <v-btn
+                        variant="outlined"
+                        prepend-icon="mdi-content-copy"
+                        @click="copyPageLink"
+                    >
+                        Скопировать ссылку
                     </v-btn>
                 </div>
             </v-card-text>
@@ -375,5 +395,7 @@ onUnmounted(() => {
                 </v-card-actions>
             </v-card>
         </v-dialog>
+
+        <Toasts />
     </div>
 </template>
