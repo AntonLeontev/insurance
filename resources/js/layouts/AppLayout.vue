@@ -87,6 +87,11 @@ const feedbackOpen = ref(false);
 			<template #append>
 				<v-divider />
 				<v-list>
+					<v-list-item	>
+						<span class="text-sm text-center text-red-500 d-flex">
+							По вопросам отмены чека обращайтесь к куратору
+						</span>
+					</v-list-item>
 					<v-list-item @click="feedbackOpen = true">
 						<span class="d-flex ga-1">
 							<v-icon icon="mdi-message-text-outline"></v-icon>
