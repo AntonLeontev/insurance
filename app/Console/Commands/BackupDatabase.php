@@ -9,7 +9,7 @@ class BackupDatabase extends Command
 {
     protected $signature = 'app:backup';
 
-    protected $description = 'Дамп базы данных и выгрузка в Cloud.ru Object Storage';
+    protected $description = 'Дамп базы данных и выгрузка в Cloud.ru и VK Cloud Object Storage';
 
     public function handle(UploadDatabaseSnapshot $upload): int
     {
@@ -19,7 +19,7 @@ class BackupDatabase extends Command
             return 1;
         }
 
-        $this->info('Бэкап выгружен в Cloud.ru');
+        $this->info('Бэкап выгружен в Cloud.ru и VK Cloud');
 
         return 0;
     }

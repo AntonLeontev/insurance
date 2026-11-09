@@ -12,6 +12,14 @@ use Throwable;
 
 class UploadDatabaseSnapshot
 {
+    /**
+     * @var array<string, string>
+     */
+    private const REMOTE_DISKS = [
+        'backups' => 'Cloud.ru',
+        'backups_vk' => 'VK Cloud',
+    ];
+
     public function __construct(
         protected BackupRetention $retention,
     ) {}
@@ -24,13 +32,13 @@ class UploadDatabaseSnapshot
             return 1;
         }
 
-        $uploaded = $this->upload($snapshot);
+        $uploadedDisks = $this->upload($snapshot);
 
-        if (! $uploaded) {
+        if (! $this->pruneRemote($snapshot->fileName, $uploadedDisks)) {
             return 1;
         }
 
-        if (! $this->pruneRemote($snapshot->fileName)) {
+        if (count($uploadedDisks) !== count(self::REMOTE_DISKS)) {
             return 1;
         }
 
@@ -74,7 +82,23 @@ class UploadDatabaseSnapshot
         return $snapshot;
     }
 
-    private function upload(Snapshot $snapshot): bool
+    /**
+     * @return list<string>
+     */
+    private function upload(Snapshot $snapshot): array
+    {
+        $uploaded = [];
+
+        foreach (self::REMOTE_DISKS as $disk => $label) {
+            if ($this->uploadToDisk($snapshot, $disk, $label)) {
+                $uploaded[] = $disk;
+            }
+        }
+
+        return $uploaded;
+    }
+
+    private function uploadToDisk(Snapshot $snapshot, string $disk, string $label): bool
     {
         $stream = Storage::disk('snapshots')->readStream($snapshot->fileName);
 
@@ -89,11 +113,11 @@ class UploadDatabaseSnapshot
         }
 
         try {
-            $stored = Storage::disk('backups')->writeStream($snapshot->fileName, $stream);
+            $stored = Storage::disk($disk)->writeStream($snapshot->fileName, $stream);
         } catch (Throwable $exception) {
-            Log::error('Не удалось загрузить снимок в Cloud.ru', [
+            Log::error("Не удалось загрузить снимок в {$label}", [
                 'filename' => $snapshot->fileName,
-                'disk' => 'backups',
+                'disk' => $disk,
                 'exception' => $exception->getMessage(),
             ]);
 
@@ -105,9 +129,9 @@ class UploadDatabaseSnapshot
         }
 
         if ($stored === false) {
-            Log::error('Не удалось загрузить снимок в Cloud.ru', [
+            Log::error("Не удалось загрузить снимок в {$label}", [
                 'filename' => $snapshot->fileName,
-                'disk' => 'backups',
+                'disk' => $disk,
                 'exception' => 'Запись потока в объектное хранилище не выполнена',
             ]);
 
@@ -117,25 +141,41 @@ class UploadDatabaseSnapshot
         return true;
     }
 
-    private function pruneRemote(string $uploadedFilename): bool
+    /**
+     * @param  list<string>  $disks
+     */
+    private function pruneRemote(string $uploadedFilename, array $disks): bool
+    {
+        $pruned = true;
+
+        foreach ($disks as $disk) {
+            if (! $this->pruneDisk($uploadedFilename, $disk)) {
+                $pruned = false;
+            }
+        }
+
+        return $pruned;
+    }
+
+    private function pruneDisk(string $uploadedFilename, string $disk): bool
     {
         try {
-            $decision = $this->retention->partition(Storage::disk('backups')->files(), now());
+            $decision = $this->retention->partition(Storage::disk($disk)->files(), now());
 
             foreach ($decision['unrecognized'] as $filename) {
                 Log::warning('Имя бэкапа не распознано, файл пропущен', [
                     'filename' => $filename,
-                    'disk' => 'backups',
+                    'disk' => $disk,
                 ]);
             }
 
             foreach ($decision['delete'] as $filename) {
-                Storage::disk('backups')->delete($filename);
+                Storage::disk($disk)->delete($filename);
             }
         } catch (Throwable $exception) {
             Log::error('Не удалось удалить устаревшие бэкапы', [
                 'filename' => $uploadedFilename,
-                'disk' => 'backups',
+                'disk' => $disk,
                 'exception' => $exception->getMessage(),
             ]);
 
