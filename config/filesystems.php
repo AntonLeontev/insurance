@@ -61,6 +61,18 @@ return [
             'driver' => 'local',
             'root' => storage_path('app/snapshots'),
         ],
+
+        'backups' => [
+            'driver' => 's3',
+            'key' => env('BACKUP_AWS_ACCESS_KEY_ID'),
+            'secret' => env('BACKUP_AWS_SECRET_ACCESS_KEY'),
+            'region' => env('BACKUP_AWS_DEFAULT_REGION', 'ru-central-1'),
+            'bucket' => env('BACKUP_AWS_BUCKET'),
+            'url' => env('BACKUP_AWS_URL'),
+            'endpoint' => env('BACKUP_AWS_ENDPOINT', 'https://s3.cloud.ru'),
+            'use_path_style_endpoint' => filter_var(env('BACKUP_AWS_USE_PATH_STYLE_ENDPOINT', true), FILTER_VALIDATE_BOOLEAN),
+            'throw' => true,
+        ],
     ],
 
     /*
