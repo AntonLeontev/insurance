@@ -14,7 +14,7 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        if ($user->email !== config('services.dashboard.owner_email')) {
+        if (! $user->canViewDashboard()) {
             Log::warning('[DashboardController.show] forbidden', [
                 'user_id' => $user->id,
             ]);

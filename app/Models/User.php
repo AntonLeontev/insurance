@@ -58,4 +58,22 @@ class User extends Authenticatable
             ->using(AgencyUser::class)
             ->withPivot('role');
     }
+
+    public function canViewDashboard(): bool
+    {
+        return $this->email === config('services.dashboard.owner_email');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toFrontendArray(): array
+    {
+        $this->loadMissing('agencies');
+
+        return [
+            ...$this->toArray(),
+            'dashboard_visible' => $this->canViewDashboard(),
+        ];
+    }
 }

@@ -13,19 +13,14 @@ class UserController extends Controller
 {
     public function currentUser()
     {
-        $user = auth()->user()->load('agencies');
-
-        return response()->json([
-            ...$user->toArray(),
-            'dashboard_visible' => $user->email === config('services.dashboard.owner_email'),
-        ]);
+        return response()->json(auth()->user()->toFrontendArray());
     }
 
     public function updateProfile(ProfileUpdateRequest $request)
     {
         auth()->user()->update($request->validated());
 
-        return response()->json(auth()->user()->load('agencies'));
+        return response()->json(auth()->user()->toFrontendArray());
     }
 
     public function updatePassword(PasswordUpdateRequest $request)
