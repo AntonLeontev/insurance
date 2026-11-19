@@ -4,6 +4,7 @@ use App\Http\Controllers\AgencyController;
 use App\Http\Controllers\AtolWebhookController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FiscalCredentialController;
 use App\Http\Controllers\InsurerController;
@@ -34,6 +35,10 @@ Route::controller(UserController::class)->group(function () {
 Route::post('feedback', [FeedbackController::class, 'store'])
     ->middleware(['auth', 'throttle:5,1'])
     ->name('feedback.store');
+
+Route::get('app/dashboard', [DashboardController::class, 'show'])
+    ->middleware(['auth', 'needAgency'])
+    ->name('dashboard');
 
 Route::controller(AgencyController::class)->group(function () {
     Route::post('agencies/{agency}/update-details', 'updateDetails')->middleware('precognitive')->name('agency.update-details');

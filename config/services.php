@@ -16,4 +16,8 @@ return [
         'max_file_kb' => 5120,
         'max_message_length' => 1000,
     ],
+
+    'dashboard' => [
+        'owner_email' => env('DASHBOARD_OWNER_EMAIL', 'aner-anton@yandex.ru'),
+    ],
 ];
